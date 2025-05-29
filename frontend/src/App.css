@@ -1,0 +1,35 @@
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+.animate-wiggle { animation: wiggle 0.5s ease-in-out infinite; }
+
+.font-handwritten {
+  font-family: 'Gochi Hand', 'Comic Sans', cursive, sans-serif;
+
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-50px) translateX(20px) rotate(5deg);
+  }
+  100% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+}
+
+.animate-float {
+  animation: float linear infinite;
+}
+
+
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.text-transparent {
+  color: transparent;
+}
