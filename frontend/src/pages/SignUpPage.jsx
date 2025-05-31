@@ -33,10 +33,10 @@ const SignUpPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary/5 via-base-100 to-secondary/5 pt-14 pb-64">
             <div className="h-screen grid lg:grid-cols-2 max-w-7xl mx-auto">
-                {/* Left Side - Form */}
+               
                 <div className="flex flex-col justify-center items-center p-6 sm:p-12">
                     <div className="w-full max-w-md space-y-8 bg-base-100/90 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-base-200">
-                        {/* Logo */}
+                       
                         <div className="text-center mb-8">
                             <div className="flex flex-col items-center gap-2 group">
                                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg group-hover:scale-105 transition-all duration-300">
@@ -167,7 +167,7 @@ const SignUpPage = () => {
                     </div>
                 </div>
 
-                {/* Right Side - Image/Pattern */}
+                
                 <AuthImagePattern
                     title="Join our community"
                     subtitle="Connect with friends, share moments, and stay in touch with your loved ones."

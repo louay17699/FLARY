@@ -15,9 +15,9 @@ const ChatHeader = () => {
       className="px-5 py-3 border-b border-base-300/50 bg-base-100/80 backdrop-blur-md"
     >
       <div className="flex items-center justify-between">
-        {/* User Info Section */}
+     
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Avatar with interactive status ring */}
+          
           <motion.div 
             whileHover={{ scale: 1.05 }}
             className="relative"
@@ -37,7 +37,7 @@ const ChatHeader = () => {
               </div>
             </div>
             
-            {/* Animated status pulse */}
+            
             {isOnline && (
               <motion.div
                 initial={{ scale: 0.8, opacity: 0.6 }}
@@ -52,7 +52,7 @@ const ChatHeader = () => {
             )}
           </motion.div>
 
-          {/* User info with truncation */}
+          
           <div className="flex-1 min-w-0">
             <motion.div whileHover={{ x: 2 }}>
               <h3 className="font-semibold text-lg truncate">
@@ -95,9 +95,9 @@ const ChatHeader = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
+      
         <div className="flex items-center gap-1">
-          {/* Communication buttons */}
+         
           <motion.button 
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
@@ -122,10 +122,10 @@ const ChatHeader = () => {
             <Search size={18} />
           </motion.button>
           
-          {/* Divider */}
+         
           <div className="h-6 w-px bg-base-300 mx-1"></div>
           
-          {/* Close button */}
+          
           <motion.button 
             onClick={() => setSelectedUser(null)}
             whileHover={{ scale: 1.1 }}

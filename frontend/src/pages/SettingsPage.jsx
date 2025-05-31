@@ -29,7 +29,7 @@ const PREVIEW_MESSAGES = [
 ];
 
 const SettingsPage = () => {
-  const { authUser } = useAuthStore(); // Get authentication status
+  const { authUser } = useAuthStore();
   const { theme, setTheme } = useThemeStore();
   const {
     selectedWallpaper,
@@ -85,21 +85,29 @@ const SettingsPage = () => {
     }
   };
 
-  const handleRemoveCustomWallpaper = (id, e) => {
+  const handleRemoveCustomWallpaper = async (id, e) => {
+    e.preventDefault();
     e.stopPropagation();
-    removeCustomWallpaper(id);
+    
+    try {
+      await removeCustomWallpaper(id);
+      
+      if (selectedWallpaper.id === id) {
+        await setWallpaper(WALLPAPERS[0]);
+      }
+    } catch (error) {
+      console.error("Failed to remove wallpaper:", error);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-base-100 to-secondary/5 pt-20 pb-10">
-      {/* Loading overlay */}
       {isUpdating && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <span className="loading loading-spinner loading-lg"></span>
         </div>
       )}
 
-      {/* Error toast */}
       {error && (
         <div className="toast toast-top toast-end">
           <div className="alert alert-error">
@@ -110,7 +118,6 @@ const SettingsPage = () => {
 
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Settings Sidebar */}
           <div className="lg:w-64 shrink-0">
             <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-4 sticky top-28">
               <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
@@ -130,7 +137,6 @@ const SettingsPage = () => {
                   Appearance
                 </button>
 
-                {/* Show Chat Wallpapers only if user is logged in */}
                 {authUser && (
                   <button
                     onClick={() => setActiveTab("wallpapers")}
@@ -145,7 +151,6 @@ const SettingsPage = () => {
                   </button>
                 )}
 
-                {/* Show Notifications only if user is logged in */}
                 {authUser && (
                   <button
                     onClick={() => setActiveTab("notifications")}
@@ -163,7 +168,6 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="flex-1">
             {activeTab === "appearance" && (
               <div className="space-y-8">
@@ -181,17 +185,12 @@ const SettingsPage = () => {
                     {THEMES.map((t) => (
                       <button
                         key={t}
-                        className={`
-                          group flex flex-col items-center gap-2 p-3 rounded-xl transition-all
+                        className={`group flex flex-col items-center gap-2 p-3 rounded-xl transition-all
                           ${theme === t ? "ring-2 ring-primary ring-offset-2" : "hover:bg-base-200"}
-                          relative overflow-hidden
-                        `}
+                          relative overflow-hidden`}
                         onClick={() => setTheme(t)}
                       >
-                        <div
-                          className="relative h-10 w-full rounded-lg overflow-hidden"
-                          data-theme={t}
-                        >
+                        <div className="relative h-10 w-full rounded-lg overflow-hidden" data-theme={t}>
                           <div className="absolute inset-0 grid grid-cols-4 gap-px p-1">
                             <div className="rounded bg-primary"></div>
                             <div className="rounded bg-secondary"></div>
@@ -225,7 +224,6 @@ const SettingsPage = () => {
                   <div className="p-4 bg-base-200">
                     <div className="max-w-lg mx-auto">
                       <div className="bg-base-100 rounded-xl shadow-sm overflow-hidden">
-                        {/* Chat header */}
                         <div className="px-4 py-3 border-b border-base-300 bg-base-100 flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-content font-medium">
@@ -239,29 +237,22 @@ const SettingsPage = () => {
                           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                         </div>
 
-                        {/* Messages */}
                         <div className="p-4 space-y-4 min-h-[250px] max-h-[250px] overflow-y-auto bg-base-100 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM5OTkiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzAgMTVjOC4yODQgMCAxNSA2LjcxNiAxNSAxNXMtNi43MTYgMTUtMTUgMTUtMTUtNi43MTYtMTUtMTUgNi43MTYtMTUgMTUtMTVtMC0xNUMxNi40MzEgMCA1IDExLjQzMSA1IDI1czExLjQzMSAyNSAyNSAyNSAyNS0xMS40MzEgMjUtMjUtMTEuNDMxLTI1LTI1LTI1eiIvPjwvZz48L2c+PC9zdmc+')]">
                           {PREVIEW_MESSAGES.map((message) => (
                             <div
                               key={message.id}
-                              className={`flex ${
-                                message.isSent ? "justify-end" : "justify-start"
-                              } group`}
+                              className={`flex ${message.isSent ? "justify-end" : "justify-start"} group`}
                             >
                               <div
-                                className={`
-                                  max-w-[80%] rounded-2xl p-3 shadow-sm relative
+                                className={`max-w-[80%] rounded-2xl p-3 shadow-sm relative
                                   ${message.isSent ? "bg-primary text-primary-content" : "bg-base-200"}
                                   ${message.isSent ? "rounded-br-none" : "rounded-bl-none"}
-                                  transition-all duration-200 group-hover:shadow-md
-                                `}
+                                  transition-all duration-200 group-hover:shadow-md`}
                               >
                                 <p className="text-sm">{message.content}</p>
                                 <p
-                                  className={`
-                                    text-[10px] mt-1.5 flex items-center justify-end gap-1
-                                    ${message.isSent ? "text-primary-content/70" : "text-base-content/70"}
-                                  `}
+                                  className={`text-[10px] mt-1.5 flex items-center justify-end gap-1
+                                    ${message.isSent ? "text-primary-content/70" : "text-base-content/70"}`}
                                 >
                                   <span>12:00 PM</span>
                                   {message.isSent && (
@@ -286,7 +277,6 @@ const SettingsPage = () => {
                           ))}
                         </div>
 
-                        {/* Message input */}
                         <div className="p-4 border-t border-base-300 bg-base-100">
                           <div className="flex gap-2">
                             <input
@@ -308,141 +298,143 @@ const SettingsPage = () => {
               </div>
             )}
 
-            {activeTab === "wallpapers" && authUser && (
-              <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-6">
-                <div className="flex flex-col gap-1 mb-6">
-                  <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <ImageIcon className="w-5 h-5 text-primary" />
-                    Chat Wallpaper
-                  </h2>
-                  <p className="text-base-content/70">Choose a background for your conversations</p>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {[...WALLPAPERS, ...customWallpapers].map((wallpaper) => (
-                    <button
-                      key={wallpaper.id}
-                      className={`
-                        group relative aspect-square rounded-xl overflow-hidden shadow-md
-                        ${selectedWallpaper.id === wallpaper.id ? "ring-2 ring-primary ring-offset-2" : ""}
-                        transition-all duration-200
-                      `}
-                      onClick={() => setWallpaper(wallpaper)}
-                    >
-                      {wallpaper.isCustom && (
-                        <div 
-                          className="absolute top-2 right-2 z-10 p-1.5 bg-error/90 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                          onClick={(e) => handleRemoveCustomWallpaper(wallpaper.id, e)}
-                          role="button"
-                          tabIndex={0}
-                          aria-label="Remove wallpaper"
-                        >
-                          <Trash2 className="w-3.5 h-3.5 text-white" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-br from-base-100/30 to-base-300/30"></div>
-                      {wallpaper.thumbnail.startsWith("http") ||
-                      wallpaper.thumbnail.startsWith("data:image") ? (
-                        <img
-                          src={wallpaper.thumbnail}
-                          alt={wallpaper.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div
-                          className="w-full h-full"
-                          style={{ background: wallpaper.thumbnail }}
-                        ></div>
-                      )}
-                      <div
-                        className={`
-                          absolute inset-0 flex items-center justify-center bg-black/30 opacity-0
-                          group-hover:opacity-100 transition-opacity
-                          ${selectedWallpaper.id === wallpaper.id ? "opacity-100" : ""}
-                        `}
-                      >
-                        <div className="bg-primary text-primary-content px-3 py-1 rounded-full text-sm font-medium">
-                          {selectedWallpaper.id === wallpaper.id ? "Selected" : "Select"}
-                        </div>
-                      </div>
-                      <div className="absolute bottom-2 left-2 right-2 text-white text-sm font-medium truncate">
-                        {wallpaper.name}
-                      </div>
-                    </button>
-                  ))}
-
-                  {/* Custom wallpaper upload */}
-                  <div
-                    className="aspect-square rounded-xl border-2 border-dashed border-base-300 flex flex-col items-center justify-center gap-2 p-4 hover:border-primary transition-colors cursor-pointer"
-                    onClick={() => fileInputRef.current.click()}
-                  >
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                    />
-                    {uploading ? (
-                      <span className="loading loading-spinner loading-md"></span>
-                    ) : (
-                      <>
-                        <UploadCloud className="w-8 h-8 text-base-content/50" />
-                        <p className="text-sm font-medium text-center">
-                          Upload Custom Wallpaper
-                        </p>
-                        <p className="text-xs text-base-content/50 text-center">
-                          JPG, PNG (auto-compressed)
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-base-300">
-                  <h3 className="font-medium mb-3">Wallpaper Settings</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
-                      <div>
-                        <h4 className="font-medium text-sm">Blur Intensity</h4>
-                        <p className="text-xs text-base-content/70">
-                          Adjust background blur effect
-                        </p>
-                      </div>
-                      <select
-                        className="select select-bordered select-sm w-24"
-                        value={blurIntensity}
-                        onChange={(e) => setBlurIntensity(e.target.value)}
-                      >
-                        {BLUR_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
-                      <div>
-                        <h4 className="font-medium text-sm">Darken Effect</h4>
-                        <p className="text-xs text-base-content/70">
-                          Make background darker for readability
-                        </p>
-                      </div>
-                      <select
-                        className="select select-bordered select-sm w-24"
-                        value={brightness}
-                        onChange={(e) => setBrightness(e.target.value)}
-                      >
-                        {BRIGHTNESS_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
+      {activeTab === "wallpapers" && authUser && (
+  <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-6">
+    <div className="flex flex-col gap-1 mb-6">
+      <h2 className="text-xl font-semibold flex items-center gap-2">
+        <ImageIcon className="w-5 h-5 text-primary" />
+        Chat Wallpaper
+      </h2>
+      <p className="text-base-content/70">Choose a background for your conversations</p>
+    </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      {[...WALLPAPERS, ...customWallpapers].map((wallpaper) => (
+        <div 
+          key={wallpaper.id}
+          className={`group relative aspect-square rounded-xl overflow-hidden shadow-md
+            ${selectedWallpaper.id === wallpaper.id ? "ring-2 ring-primary ring-offset-2" : ""}
+            transition-all duration-200`}
+        >
+          
+          {wallpaper.isCustom && (
+            <button 
+              className="absolute top-2 right-2 z-10 p-1.5 bg-error/90 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => handleRemoveCustomWallpaper(wallpaper.id, e)}
+              aria-label="Remove wallpaper"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-white" />
+            </button>
+          )}
+          
+          
+          <div 
+            className="absolute inset-0 cursor-pointer"
+            onClick={() => setWallpaper(wallpaper)}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-base-100/30 to-base-300/30"></div>
+            {wallpaper.thumbnail.startsWith("http") ||
+            wallpaper.thumbnail.startsWith("data:image") ? (
+              <img
+                src={wallpaper.thumbnail}
+                alt={wallpaper.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-full h-full"
+                style={{ background: wallpaper.thumbnail }}
+              ></div>
             )}
+            <div
+              className={`absolute inset-0 flex items-center justify-center bg-black/30 opacity-0
+                group-hover:opacity-100 transition-opacity
+                ${selectedWallpaper.id === wallpaper.id ? "opacity-100" : ""}`}
+            >
+              <div className="bg-primary text-primary-content px-3 py-1 rounded-full text-sm font-medium">
+                {selectedWallpaper.id === wallpaper.id ? "Selected" : "Select"}
+              </div>
+            </div>
+            <div className="absolute bottom-2 left-2 right-2 text-white text-sm font-medium truncate">
+              {wallpaper.name}
+            </div>
+          </div>
+        </div>
+      ))}
+
+      
+      <div
+        className="aspect-square rounded-xl border-2 border-dashed border-base-300 flex flex-col items-center justify-center gap-2 p-4 hover:border-primary transition-colors cursor-pointer"
+        onClick={() => fileInputRef.current.click()}
+      >
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept="image/*"
+          onChange={handleFileUpload}
+        />
+        {uploading ? (
+          <span className="loading loading-spinner loading-md"></span>
+        ) : (
+          <>
+            <UploadCloud className="w-8 h-8 text-base-content/50" />
+            <p className="text-sm font-medium text-center">
+              Upload Custom Wallpaper
+            </p>
+            <p className="text-xs text-base-content/50 text-center">
+              JPG, PNG (auto-compressed)
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+
+   
+    <div className="mt-8 pt-6 border-t border-base-300">
+      <h3 className="font-medium mb-3">Wallpaper Settings</h3>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+          <div>
+            <h4 className="font-medium text-sm">Blur Intensity</h4>
+            <p className="text-xs text-base-content/70">
+              Adjust background blur effect
+            </p>
+          </div>
+          <select
+            className="select select-bordered select-sm w-24"
+            value={blurIntensity}
+            onChange={(e) => setBlurIntensity(e.target.value)}
+          >
+            {BLUR_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+          <div>
+            <h4 className="font-medium text-sm">Darken Effect</h4>
+            <p className="text-xs text-base-content/70">
+              Make background darker for readability
+            </p>
+          </div>
+          <select
+            className="select select-bordered select-sm w-24"
+            value={brightness}
+            onChange={(e) => setBrightness(e.target.value)}
+          >
+            {BRIGHTNESS_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
             {activeTab === "notifications" && authUser && (
               <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-6">

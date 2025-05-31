@@ -16,7 +16,7 @@ const MessageInput = () => {
   const emojiPickerRef = useRef(null);
   const { sendMessage } = useChatStore();
 
-  // Handle click outside to close emoji picker
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
@@ -129,7 +129,7 @@ const MessageInput = () => {
       </AnimatePresence>
 
       <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-        {/* Hidden file input */}
+        
         <input
           type="file"
           accept="image/*"
@@ -139,7 +139,7 @@ const MessageInput = () => {
           disabled={isSendingImage}
         />
         
-        {/* Left action buttons */}
+       
         <div className="flex items-center gap-1">
           <motion.button
             type="button"
@@ -163,7 +163,7 @@ const MessageInput = () => {
           </motion.button>
         </div>
 
-        {/* Main input */}
+        
         <div className="flex-1 relative">
           <motion.input
             type="text"
@@ -194,7 +194,7 @@ const MessageInput = () => {
           )}
         </div>
 
-        {/* Send button */}
+       
         <motion.button
           type="submit"
           className={`btn btn-circle ${
@@ -214,7 +214,7 @@ const MessageInput = () => {
         </motion.button>
       </form>
 
-      {/* Emoji Picker */}
+    
       <AnimatePresence>
         {showEmojiPicker && (
           <motion.div

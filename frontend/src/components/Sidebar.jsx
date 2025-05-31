@@ -14,7 +14,7 @@ const Sidebar = () => {
     isUsersLoading,
     searchQuery,
     setSearchQuery
-  } = useChatStore(); // Changed back to useChatStore
+  } = useChatStore(); 
 
   const { onlineUsers } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
@@ -23,7 +23,7 @@ const Sidebar = () => {
     getUsers();
   }, [getUsers]);
 
-  // Added null checks for users and onlineUsers
+  
   const filteredUsers = (users || [])
     .filter(user => 
       showOnlineOnly 
@@ -38,7 +38,7 @@ const Sidebar = () => {
 
   return (
     <aside className="h-full w-72 border-r border-base-300 flex flex-col bg-gradient-to-b from-base-100 to-base-200/50">
-      {/* Header */}
+     
       <div className="border-b border-base-300 w-full p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -47,7 +47,7 @@ const Sidebar = () => {
           </div>
         </div>
         
-        {/* Search bar */}
+       
         <div>
           <input
             type="text"
@@ -58,7 +58,7 @@ const Sidebar = () => {
           />
         </div>
         
-        {/* Online filter toggle */}
+        
         <div className="flex items-center gap-2">
           <label className="cursor-pointer flex items-center gap-2">
             <input
@@ -75,7 +75,7 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Users list */}
+     
       <div className="flex flex-col overflow-y-auto w-full py-2">
         {filteredUsers.map((user, index) => (
           <motion.div

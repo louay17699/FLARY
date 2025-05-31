@@ -3,7 +3,7 @@ import { MessageSquare } from "lucide-react";
 const AuthImagePattern = ({ title, subtitle }) => {
   return (
     <div className="hidden lg:flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 p-12 relative overflow-hidden">
-      {/* Animated floating bubbles */}
+      
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(12)].map((_, i) => (
           <div
@@ -33,7 +33,7 @@ const AuthImagePattern = ({ title, subtitle }) => {
           <p className="text-base-content/70 text-lg">{subtitle}</p>
         </div>
         
-        {/* Feature list */}
+       
         <div className="space-y-4 text-left">
           <div className="flex items-start gap-3">
             <div className="mt-1 p-1 rounded-full bg-primary/10 text-primary">

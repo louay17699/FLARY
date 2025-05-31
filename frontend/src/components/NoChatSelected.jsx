@@ -1,6 +1,6 @@
 import { MessageSquare, CornerUpRight, PenTool, Coffee, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 
 const NoChatSelected = () => {
   const constraintsRef = useRef(null);
@@ -8,7 +8,7 @@ const NoChatSelected = () => {
 
   return (
     <div className="w-full h-full flex flex-1 items-center justify-center p-8 overflow-hidden">
-      {/* Animated floating bubbles background */}
+   
       <div 
         ref={constraintsRef}
         className="absolute inset-0 pointer-events-none overflow-hidden"
@@ -38,14 +38,14 @@ const NoChatSelected = () => {
         ))}
       </div>
 
-      {/* Main content container */}
+     
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="relative z-10 max-w-2xl text-center"
       >
-        {/* Hand-drawn chat bubble with physics-based animation */}
+        
         <motion.div 
           className="absolute -top-12 -left-10 rotate-12 opacity-70 dark:opacity-50"
           animate={{
@@ -70,7 +70,7 @@ const NoChatSelected = () => {
           </svg>
         </motion.div>
 
-        {/* Animated header */}
+       
         <motion.div
           className="inline-flex items-center gap-3 px-6 py-3 bg-base-100 dark:bg-base-200 border-2 border-base-300 dark:border-base-300/50 rounded-full shadow-lg mb-8"
           whileHover={{ scale: 1.05 }}
@@ -101,7 +101,7 @@ const NoChatSelected = () => {
           </motion.h1>
         </motion.div>
 
-        {/* Instruction items with staggered animation */}
+        
         <motion.div 
           className="space-y-4 text-lg text-base-content/80 dark:text-base-content/60 mb-8"
           initial="hidden"
@@ -170,7 +170,7 @@ const NoChatSelected = () => {
           </motion.p>
         </motion.div>
 
-        {/* Interactive coffee tip with physics */}
+        
         <motion.div 
           className="group relative mt-8 inline-block"
           whileHover={{ scale: 1.02 }}
@@ -226,7 +226,7 @@ const NoChatSelected = () => {
           </motion.div>
         </motion.div>
 
-        {/* Animated hand-drawn decoration */}
+       
         <motion.div 
           className="absolute -bottom-8 -right-8 -rotate-12 opacity-70 dark:opacity-50"
           animate={{

@@ -89,7 +89,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       const res = await axiosInstance.put("/wallpaper", data);
       
-      // Update local state only after successful backend update
+      
       set((state) => ({
         authUser: {
           ...state.authUser,
@@ -97,18 +97,18 @@ export const useAuthStore = create((set, get) => ({
         }
       }));
       
-      // Return the updated settings
+      
       return res.data.wallpaperSettings;
     } catch (error) {
       console.error("Failed to update wallpaper settings:", error);
       
-      // Revert to previous settings in the UI
+      
       const { authUser } = get();
       if (authUser?.wallpaperSettings) {
         useWallpaperStore.getState().initializeFromAuthUser();
       }
       
-      throw error; // Re-throw to allow handling in the calling function
+      throw error; 
     }
   },
 

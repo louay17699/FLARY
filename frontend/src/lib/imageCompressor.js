@@ -1,4 +1,4 @@
-// src/lib/imageCompressor.js
+
 export async function compressImage(file, options) {
   return new Promise((resolve, reject) => {
     if (!file.type.match('image.*')) {
@@ -13,7 +13,7 @@ export async function compressImage(file, options) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        // Calculate new dimensions while maintaining aspect ratio
+        
         let width = img.width;
         let height = img.height;
         
@@ -30,10 +30,10 @@ export async function compressImage(file, options) {
         canvas.width = width;
         canvas.height = height;
         
-        // Draw image with new dimensions
+        
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Convert to blob with specified quality
+        
         canvas.toBlob(
           (blob) => {
             if (!blob) {
@@ -41,7 +41,7 @@ export async function compressImage(file, options) {
               return;
             }
             
-            // Create a new file with compressed data
+           
             const compressedFile = new File([blob], file.name, {
               type: options.mimeType,
               lastModified: Date.now()

@@ -1,4 +1,4 @@
-// src/components/ChatContainer.js
+
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef, useState } from "react";
 import ChatHeader from "./ChatHeader";
@@ -48,7 +48,7 @@ const ChatContainer = () => {
     <div className="flex-1 flex flex-col bg-base-100 rounded-xl overflow-hidden border border-base-300">
       <ChatHeader />
 
-      {/* Messages Area */}
+     
       <div 
         className="flex-1 overflow-y-auto p-4"
         style={{
@@ -143,7 +143,7 @@ const ChatContainer = () => {
 
       <MessageInput />
 
-      {/* Image Modal */}
+      
       {selectedImage && (
         <div className="modal modal-open">
           <div className="modal-box max-w-5xl h-[90vh] flex flex-col">

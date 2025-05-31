@@ -28,7 +28,6 @@ export const useWallpaperStore = create((set, get) => ({
           isUpdating: false
         });
       } else {
-        // Reset to defaults if no user or no settings
         set({
           selectedWallpaper: WALLPAPERS[0],
           blurIntensity: '4px',
@@ -138,14 +137,22 @@ export const useWallpaperStore = create((set, get) => ({
     try {
       set({ isUpdating: true, error: null });
       const newCustomWallpapers = get().customWallpapers.filter(w => w.id !== id);
+      
+      // If the deleted wallpaper was selected, fall back to default
+      const selectedId = get().selectedWallpaper.id === id 
+        ? WALLPAPERS[0].id 
+        : get().selectedWallpaper.id;
+      
       await useAuthStore.getState().updateWallpaperSettings({
-        selectedWallpaperId: get().selectedWallpaper.id,
+        selectedWallpaperId: selectedId,
         blurIntensity: get().blurIntensity,
         brightness: get().brightness,
         customWallpapers: newCustomWallpapers
       });
+      
       set({ 
         customWallpapers: newCustomWallpapers,
+        selectedWallpaper: selectedId === WALLPAPERS[0].id ? WALLPAPERS[0] : get().selectedWallpaper,
         isUpdating: false 
       });
     } catch (error) {
