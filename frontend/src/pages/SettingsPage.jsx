@@ -17,6 +17,7 @@ import {
   Settings2,
   Check,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import { THEMES } from "../constants/index.js";
 import { useAuthStore } from "../store/useAuthStore";
@@ -42,13 +43,19 @@ const SettingsPage = () => {
     addCustomWallpaper,
     removeCustomWallpaper,
     initializeFromAuthUser,
-    isUpdating,
     error
   } = useWallpaperStore();
 
   const [activeTab, setActiveTab] = useState("appearance");
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    wallpaperId: null,
+    wallpaperName: ""
+  });
+  const [deletingWallpaperId, setDeletingWallpaperId] = useState(null);
+  const [selectingWallpaperId, setSelectingWallpaperId] = useState(null);
 
   useEffect(() => {
     initializeFromAuthUser();
@@ -71,7 +78,7 @@ const SettingsPage = () => {
           url: event.target.result,
           blur: "4px",
           brightness: "0.85",
-          isCustom: true,
+          isCustom: true
         };
         addCustomWallpaper(newWallpaper);
         setUploading(false);
@@ -85,33 +92,91 @@ const SettingsPage = () => {
     }
   };
 
-  const handleRemoveCustomWallpaper = async (id, e) => {
+  const handleWallpaperSelect = async (wallpaper) => {
+    if (selectingWallpaperId || deletingWallpaperId) return;
+    
+    setSelectingWallpaperId(wallpaper.id);
+    try {
+      await setWallpaper(wallpaper);
+    } catch (error) {
+      console.error("Failed to set wallpaper:", error);
+    } finally {
+      setSelectingWallpaperId(null);
+    }
+  };
+
+  const handleRemoveCustomWallpaper = async (id, name, e) => {
     e.preventDefault();
     e.stopPropagation();
+    setDeleteModal({
+      isOpen: true,
+      wallpaperId: id,
+      wallpaperName: name
+    });
+  };
+
+  const confirmDelete = async () => {
+    setDeletingWallpaperId(deleteModal.wallpaperId);
+    setDeleteModal({ isOpen: false, wallpaperId: null, wallpaperName: "" });
     
     try {
-      await removeCustomWallpaper(id);
+      await removeCustomWallpaper(deleteModal.wallpaperId);
       
-      if (selectedWallpaper.id === id) {
-        await setWallpaper(WALLPAPERS[0]);
+      if (selectedWallpaper.id === deleteModal.wallpaperId) {
+        await handleWallpaperSelect(WALLPAPERS[0]);
       }
     } catch (error) {
       console.error("Failed to remove wallpaper:", error);
+    } finally {
+      setDeletingWallpaperId(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({ isOpen: false, wallpaperId: null, wallpaperName: "" });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-base-100 to-secondary/5 pt-20 pb-10">
-      {isUpdating && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <span className="loading loading-spinner loading-lg"></span>
-        </div>
-      )}
-
       {error && (
         <div className="toast toast-top toast-end">
           <div className="alert alert-error">
             <span>{error}</span>
+          </div>
+        </div>
+      )}
+
+      
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-base-100 rounded-xl shadow-xl max-w-md w-full p-6 animate-fadeIn">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="p-3 rounded-full bg-error/10">
+                <Trash2 className="w-8 h-8 text-error" />
+              </div>
+              
+              <h3 className="text-xl font-bold">Delete Wallpaper</h3>
+              
+              <p className="text-base-content/80">
+                Are you sure you want to delete <span className="font-medium">"{deleteModal.wallpaperName}"</span>?
+                This action cannot be undone.
+              </p>
+              
+              <div className="flex gap-3 w-full mt-4">
+                <button
+                  onClick={cancelDelete}
+                  className="btn btn-ghost flex-1 border border-base-300 hover:bg-base-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="btn btn-error flex-1 text-white hover:bg-error/90"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -298,143 +363,158 @@ const SettingsPage = () => {
               </div>
             )}
 
-      {activeTab === "wallpapers" && authUser && (
-  <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-6">
-    <div className="flex flex-col gap-1 mb-6">
-      <h2 className="text-xl font-semibold flex items-center gap-2">
-        <ImageIcon className="w-5 h-5 text-primary" />
-        Chat Wallpaper
-      </h2>
-      <p className="text-base-content/70">Choose a background for your conversations</p>
-    </div>
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-      {[...WALLPAPERS, ...customWallpapers].map((wallpaper) => (
-        <div 
-          key={wallpaper.id}
-          className={`group relative aspect-square rounded-xl overflow-hidden shadow-md
-            ${selectedWallpaper.id === wallpaper.id ? "ring-2 ring-primary ring-offset-2" : ""}
-            transition-all duration-200`}
-        >
-          
-          {wallpaper.isCustom && (
-            <button 
-              className="absolute top-2 right-2 z-10 p-1.5 bg-error/90 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={(e) => handleRemoveCustomWallpaper(wallpaper.id, e)}
-              aria-label="Remove wallpaper"
-            >
-              <Trash2 className="w-3.5 h-3.5 text-white" />
-            </button>
-          )}
-          
-          
-          <div 
-            className="absolute inset-0 cursor-pointer"
-            onClick={() => setWallpaper(wallpaper)}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-base-100/30 to-base-300/30"></div>
-            {wallpaper.thumbnail.startsWith("http") ||
-            wallpaper.thumbnail.startsWith("data:image") ? (
-              <img
-                src={wallpaper.thumbnail}
-                alt={wallpaper.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div
-                className="w-full h-full"
-                style={{ background: wallpaper.thumbnail }}
-              ></div>
-            )}
-            <div
-              className={`absolute inset-0 flex items-center justify-center bg-black/30 opacity-0
-                group-hover:opacity-100 transition-opacity
-                ${selectedWallpaper.id === wallpaper.id ? "opacity-100" : ""}`}
-            >
-              <div className="bg-primary text-primary-content px-3 py-1 rounded-full text-sm font-medium">
-                {selectedWallpaper.id === wallpaper.id ? "Selected" : "Select"}
+            {activeTab === "wallpapers" && authUser && (
+              <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-6">
+                <div className="flex flex-col gap-1 mb-6">
+                  <h2 className="text-xl font-semibold flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-primary" />
+                    Chat Wallpaper
+                  </h2>
+                  <p className="text-base-content/70">Choose a background for your conversations</p>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {[...WALLPAPERS, ...customWallpapers].map((wallpaper) => (
+                    <div 
+                      key={wallpaper.id}
+                      className={`group relative aspect-square rounded-xl overflow-hidden shadow-md
+                        ${selectedWallpaper.id === wallpaper.id ? "ring-2 ring-primary ring-offset-2" : ""}
+                        transition-all duration-200`}
+                    >
+                      {(wallpaper.isCustom || wallpaper.id?.startsWith('custom-')) && (
+                        <button 
+                          className={`absolute top-2 right-2 z-10 p-1.5 bg-error/90 rounded-full ${
+                            deletingWallpaperId === wallpaper.id || selectingWallpaperId === wallpaper.id ? 'hidden' : ''
+                          }`}
+                          onClick={(e) => handleRemoveCustomWallpaper(wallpaper.id, wallpaper.name, e)}
+                          aria-label="Remove wallpaper"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-white" />
+                        </button>
+                      )}
+                      
+                      {(deletingWallpaperId === wallpaper.id || selectingWallpaperId === wallpaper.id) && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                          <div className="flex flex-col items-center gap-2">
+                            <Loader2 className="w-8 h-8 text-white animate-spin" />
+                            <span className="text-white font-medium">
+                              {deletingWallpaperId === wallpaper.id ? "Deleting..." : "Applying..."}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div 
+                        className="absolute inset-0 cursor-pointer"
+                        onClick={() => !deletingWallpaperId && !selectingWallpaperId && handleWallpaperSelect(wallpaper)}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-base-100/30 to-base-300/30"></div>
+                        {wallpaper.thumbnail.startsWith("http") ||
+                        wallpaper.thumbnail.startsWith("data:image") ? (
+                          <img
+                            src={wallpaper.thumbnail}
+                            alt={wallpaper.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="w-full h-full"
+                            style={{ background: wallpaper.thumbnail }}
+                          ></div>
+                        )}
+                        <div
+                          className={`absolute inset-0 flex items-center justify-center bg-black/30 opacity-0
+                            group-hover:opacity-100 transition-opacity
+                            ${selectedWallpaper.id === wallpaper.id ? "opacity-100" : ""}
+                            ${deletingWallpaperId === wallpaper.id || selectingWallpaperId === wallpaper.id ? 'opacity-0' : ''}`}
+                        >
+                          <div className="bg-primary text-primary-content px-3 py-1 rounded-full text-sm font-medium">
+                            {selectedWallpaper.id === wallpaper.id ? "Selected" : "Select"}
+                          </div>
+                        </div>
+                        <div className={`absolute bottom-2 left-2 right-2 text-white text-sm font-medium truncate ${
+                          deletingWallpaperId === wallpaper.id || selectingWallpaperId === wallpaper.id ? 'opacity-0' : ''
+                        }`}>
+                          {wallpaper.name}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div
+                    className="aspect-square rounded-xl border-2 border-dashed border-base-300 flex flex-col items-center justify-center gap-2 p-4 hover:border-primary transition-colors cursor-pointer relative"
+                    onClick={() => !uploading && fileInputRef.current.click()}
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                    />
+                    {uploading ? (
+                      <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center rounded-xl">
+                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                        <span className="text-primary-content font-medium mt-2">Uploading...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <UploadCloud className="w-8 h-8 text-base-content/50" />
+                        <p className="text-sm font-medium text-center">
+                          Upload Custom Wallpaper
+                        </p>
+                        <p className="text-xs text-base-content/50 text-center">
+                          JPG, PNG (auto-compressed)
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-base-300">
+                  <h3 className="font-medium mb-3">Wallpaper Settings</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                      <div>
+                        <h4 className="font-medium text-sm">Blur Intensity</h4>
+                        <p className="text-xs text-base-content/70">
+                          Adjust background blur effect
+                        </p>
+                      </div>
+                      <select
+                        className="select select-bordered select-sm w-24"
+                        value={blurIntensity}
+                        onChange={(e) => setBlurIntensity(e.target.value)}
+                      >
+                        {BLUR_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                      <div>
+                        <h4 className="font-medium text-sm">Darken Effect</h4>
+                        <p className="text-xs text-base-content/70">
+                          Make background darker for readability
+                        </p>
+                      </div>
+                      <select
+                        className="select select-bordered select-sm w-24"
+                        value={brightness}
+                        onChange={(e) => setBrightness(e.target.value)}
+                      >
+                        {BRIGHTNESS_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="absolute bottom-2 left-2 right-2 text-white text-sm font-medium truncate">
-              {wallpaper.name}
-            </div>
-          </div>
-        </div>
-      ))}
-
-      
-      <div
-        className="aspect-square rounded-xl border-2 border-dashed border-base-300 flex flex-col items-center justify-center gap-2 p-4 hover:border-primary transition-colors cursor-pointer"
-        onClick={() => fileInputRef.current.click()}
-      >
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          accept="image/*"
-          onChange={handleFileUpload}
-        />
-        {uploading ? (
-          <span className="loading loading-spinner loading-md"></span>
-        ) : (
-          <>
-            <UploadCloud className="w-8 h-8 text-base-content/50" />
-            <p className="text-sm font-medium text-center">
-              Upload Custom Wallpaper
-            </p>
-            <p className="text-xs text-base-content/50 text-center">
-              JPG, PNG (auto-compressed)
-            </p>
-          </>
-        )}
-      </div>
-    </div>
-
-   
-    <div className="mt-8 pt-6 border-t border-base-300">
-      <h3 className="font-medium mb-3">Wallpaper Settings</h3>
-      <div className="space-y-3">
-        <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
-          <div>
-            <h4 className="font-medium text-sm">Blur Intensity</h4>
-            <p className="text-xs text-base-content/70">
-              Adjust background blur effect
-            </p>
-          </div>
-          <select
-            className="select select-bordered select-sm w-24"
-            value={blurIntensity}
-            onChange={(e) => setBlurIntensity(e.target.value)}
-          >
-            {BLUR_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
-          <div>
-            <h4 className="font-medium text-sm">Darken Effect</h4>
-            <p className="text-xs text-base-content/70">
-              Make background darker for readability
-            </p>
-          </div>
-          <select
-            className="select select-bordered select-sm w-24"
-            value={brightness}
-            onChange={(e) => setBrightness(e.target.value)}
-          >
-            {BRIGHTNESS_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+            )}
 
             {activeTab === "notifications" && authUser && (
               <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-6">

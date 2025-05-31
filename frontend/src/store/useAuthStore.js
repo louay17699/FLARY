@@ -28,20 +28,22 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  checkAuth: async () => {
-    try {
-      const res = await axiosInstance.get("/auth/check");
-      set({ authUser: res.data });
-      get().connectSocket();
-      await get().initializeWallpaper();
-    } catch (error) {
-      console.log("Error in checkAuth:", error);
-      set({ authUser: null });
-      useWallpaperStore.getState().reset();
-    } finally {
-      set({ isCheckingAuth: false });
-    }
-  },
+
+checkAuth: async () => {
+  try {
+    const res = await axiosInstance.get("/auth/check");
+    set({ authUser: res.data });
+    get().connectSocket();
+   
+    await useWallpaperStore.getState().initializeFromAuthUser();
+  } catch (error) {
+    console.log("Error in checkAuth:", error);
+    set({ authUser: null });
+    useWallpaperStore.getState().reset();
+  } finally {
+    set({ isCheckingAuth: false });
+  }
+},
 
   signup: async (data) => {
     set({ isSigningUp: true });
@@ -111,6 +113,25 @@ export const useAuthStore = create((set, get) => ({
       throw error; 
     }
   },
+
+
+  deleteWallpaper: async (wallpaperId) => {
+  try {
+    const res = await axiosInstance.delete(`/wallpaper/${wallpaperId}`);
+    
+    set((state) => ({
+      authUser: {
+        ...state.authUser,
+        wallpaperSettings: res.data.wallpaperSettings
+      }
+    }));
+    
+    return res.data.wallpaperSettings;
+  } catch (error) {
+    console.error("Failed to delete wallpaper:", error);
+    throw error; 
+  }
+},
 
   updateProfile: async (data) => {
     set({ isUpdatingProfile: true });

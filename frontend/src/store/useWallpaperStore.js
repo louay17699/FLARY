@@ -10,39 +10,47 @@ export const useWallpaperStore = create((set, get) => ({
   isUpdating: false,
   error: null,
 
-  initializeFromAuthUser: () => {
-    try {
-      set({ isUpdating: true, error: null });
-      const { authUser } = useAuthStore.getState();
+
+initializeFromAuthUser: () => {
+  try {
+    set({ isUpdating: true, error: null });
+    const { authUser } = useAuthStore.getState();
+    
+    if (authUser?.wallpaperSettings) {
+      const wpSettings = authUser.wallpaperSettings;
       
-      if (authUser?.wallpaperSettings) {
-        const wpSettings = authUser.wallpaperSettings;
-        const selected = [...WALLPAPERS, ...(wpSettings.customWallpapers || [])]
-          .find(wp => wp.id === wpSettings.selectedWallpaperId) || WALLPAPERS[0];
-        
-        set({
-          selectedWallpaper: selected,
-          blurIntensity: wpSettings.blurIntensity || '4px',
-          brightness: wpSettings.brightness || '0.9',
-          customWallpapers: wpSettings.customWallpapers || [],
-          isUpdating: false
-        });
-      } else {
-        set({
-          selectedWallpaper: WALLPAPERS[0],
-          blurIntensity: '4px',
-          brightness: '0.9',
-          customWallpapers: [],
-          isUpdating: false
-        });
-      }
-    } catch (error) {
-      set({ 
-        error: error.message || 'Failed to initialize wallpaper settings',
-        isUpdating: false 
+      
+      const customWPs = (wpSettings.customWallpapers || []).map(wp => ({
+        ...wp,
+        isCustom: true
+      }));
+      
+      const selected = [...WALLPAPERS, ...customWPs]
+        .find(wp => wp.id === wpSettings.selectedWallpaperId) || WALLPAPERS[0];
+      
+      set({
+        selectedWallpaper: selected,
+        blurIntensity: wpSettings.blurIntensity || '4px',
+        brightness: wpSettings.brightness || '0.9',
+        customWallpapers: customWPs,
+        isUpdating: false
+      });
+    } else {
+      set({
+        selectedWallpaper: WALLPAPERS[0],
+        blurIntensity: '4px',
+        brightness: '0.9',
+        customWallpapers: [],
+        isUpdating: false
       });
     }
-  },
+  } catch (error) {
+    set({ 
+      error: error.message || 'Failed to initialize wallpaper settings',
+      isUpdating: false 
+    });
+  }
+},
 
   setWallpaper: async (wallpaper) => {
     try {
@@ -133,36 +141,29 @@ export const useWallpaperStore = create((set, get) => ({
     }
   },
 
-  removeCustomWallpaper: async (id) => {
-    try {
-      set({ isUpdating: true, error: null });
-      const newCustomWallpapers = get().customWallpapers.filter(w => w.id !== id);
-      
-      // If the deleted wallpaper was selected, fall back to default
-      const selectedId = get().selectedWallpaper.id === id 
-        ? WALLPAPERS[0].id 
-        : get().selectedWallpaper.id;
-      
-      await useAuthStore.getState().updateWallpaperSettings({
-        selectedWallpaperId: selectedId,
-        blurIntensity: get().blurIntensity,
-        brightness: get().brightness,
-        customWallpapers: newCustomWallpapers
-      });
-      
-      set({ 
-        customWallpapers: newCustomWallpapers,
-        selectedWallpaper: selectedId === WALLPAPERS[0].id ? WALLPAPERS[0] : get().selectedWallpaper,
-        isUpdating: false 
-      });
-    } catch (error) {
-      set({ 
-        error: error.message || 'Failed to remove custom wallpaper',
-        isUpdating: false 
-      });
-      throw error;
-    }
-  },
+removeCustomWallpaper: async (id) => {
+  try {
+    set({ isUpdating: true, error: null });
+    
+   
+    const wallpaperSettings = await useAuthStore.getState().deleteWallpaper(id);
+   
+    const selected = [...WALLPAPERS, ...(wallpaperSettings.customWallpapers || [])]
+      .find(wp => wp.id === wallpaperSettings.selectedWallpaperId) || WALLPAPERS[0];
+    
+    set({ 
+      customWallpapers: wallpaperSettings.customWallpapers || [],
+      selectedWallpaper: selected,
+      isUpdating: false 
+    });
+  } catch (error) {
+    set({ 
+      error: error.message || 'Failed to remove custom wallpaper',
+      isUpdating: false 
+    });
+    throw error;
+  }
+},
 
   reset: () => {
     set({
