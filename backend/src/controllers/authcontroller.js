@@ -94,7 +94,6 @@ export const logout = (req, res) => {
     }
 }
 
-// Update in authcontroller.js
 export const updateProfile = async (req, res) => {
   try {
     const { profilePic, fullName } = req.body;
