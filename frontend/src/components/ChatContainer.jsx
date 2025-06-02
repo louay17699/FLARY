@@ -51,13 +51,22 @@ const ChatContainer = () => {
      
       <div 
         className="flex-1 overflow-y-auto p-4"
-        style={{
-          backgroundImage: selectedWallpaper.url ? `url(${selectedWallpaper.url})` : undefined,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-          backdropFilter: selectedWallpaper.url ? `blur(${blurIntensity}) brightness(${brightness})` : undefined
-        }}
+  style={{
+    backgroundImage: selectedWallpaper.url ? `url(${selectedWallpaper.url})` : undefined,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed',
+    // Apply blur directly to the background image
+    filter: selectedWallpaper.url 
+      ? `brightness(${brightness}) blur(${blurIntensity})` 
+      : undefined,
+    // Fallback for older browsers
+    WebkitFilter: selectedWallpaper.url 
+      ? `brightness(${brightness}) blur(${blurIntensity})` 
+      : undefined,
+    // Ensure content stays sharp
+    isolation: 'isolate'
+  }}
       >
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-4">

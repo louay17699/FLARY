@@ -64,8 +64,25 @@ const SettingsPage = () => {
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
+    // Create immediate preview
+    const previewUrl = URL.createObjectURL(file);
+    const tempWallpaper = {
+      id: `temp-${Date.now()}`,
+      name: file.name.split(".")[0] || "Custom Wallpaper",
+      thumbnail: previewUrl,
+      url: previewUrl,
+      blur: "4px",
+      brightness: "0.85",
+      isCustom: true,
+      isProcessing: true
+    };
+    
+    // Add temporary wallpaper immediately
+    addCustomWallpaper(tempWallpaper);
     setUploading(true);
 
+    // Process in background
     try {
       const compressedFile = await compressImage(file, IMAGE_COMPRESSION_SETTINGS);
       const reader = new FileReader();
@@ -80,20 +97,26 @@ const SettingsPage = () => {
           brightness: "0.85",
           isCustom: true
         };
+        
+        // Replace temporary with final wallpaper
+        removeCustomWallpaper(tempWallpaper.id);
         addCustomWallpaper(newWallpaper);
-        setUploading(false);
       };
 
       reader.readAsDataURL(compressedFile);
     } catch (error) {
       console.error("Image compression error:", error);
+      // Remove temporary on error
+      removeCustomWallpaper(tempWallpaper.id);
       alert("Failed to process image. Please try another image.");
+    } finally {
       setUploading(false);
+      URL.revokeObjectURL(previewUrl); // Clean up
     }
   };
 
   const handleWallpaperSelect = async (wallpaper) => {
-    if (selectingWallpaperId || deletingWallpaperId) return;
+    if (wallpaper.isProcessing) return;
     
     setSelectingWallpaperId(wallpaper.id);
     try {
@@ -146,7 +169,6 @@ const SettingsPage = () => {
         </div>
       )}
 
-      
       {deleteModal.isOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-base-100 rounded-xl shadow-xl max-w-md w-full p-6 animate-fadeIn">
@@ -376,11 +398,12 @@ const SettingsPage = () => {
                   {[...WALLPAPERS, ...customWallpapers].map((wallpaper) => (
                     <div 
                       key={wallpaper.id}
-                      className={`group relative aspect-square rounded-xl overflow-hidden shadow-md
+                      className={`group relative aspect-square rounded-xl overflow-hidden shadow-md cursor-pointer
                         ${selectedWallpaper.id === wallpaper.id ? "ring-2 ring-primary ring-offset-2" : ""}
                         transition-all duration-200`}
+                      onClick={() => handleWallpaperSelect(wallpaper)}
                     >
-                      {(wallpaper.isCustom || wallpaper.id?.startsWith('custom-')) && (
+                      {(wallpaper.isCustom || wallpaper.id?.startsWith('custom-')) && !wallpaper.isProcessing && (
                         <button 
                           className={`absolute top-2 right-2 z-10 p-1.5 bg-error/90 rounded-full ${
                             deletingWallpaperId === wallpaper.id || selectingWallpaperId === wallpaper.id ? 'hidden' : ''
@@ -392,21 +415,17 @@ const SettingsPage = () => {
                         </button>
                       )}
                       
-                      {(deletingWallpaperId === wallpaper.id || selectingWallpaperId === wallpaper.id) && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-                          <div className="flex flex-col items-center gap-2">
-                            <Loader2 className="w-8 h-8 text-white animate-spin" />
-                            <span className="text-white font-medium">
-                              {deletingWallpaperId === wallpaper.id ? "Deleting..." : "Applying..."}
-                            </span>
-                          </div>
+                      {(wallpaper.isProcessing || deletingWallpaperId === wallpaper.id || selectingWallpaperId === wallpaper.id) && (
+                        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center z-10">
+                          <Loader2 className="w-8 h-8 text-white animate-spin" />
+                          <span className="text-white font-medium mt-2">
+                            {wallpaper.isProcessing ? "Processing..." : 
+                             deletingWallpaperId === wallpaper.id ? "Deleting..." : "Applying..."}
+                          </span>
                         </div>
                       )}
                       
-                      <div 
-                        className="absolute inset-0 cursor-pointer"
-                        onClick={() => !deletingWallpaperId && !selectingWallpaperId && handleWallpaperSelect(wallpaper)}
-                      >
+                      <div className="absolute inset-0">
                         <div className="absolute inset-0 bg-gradient-to-br from-base-100/30 to-base-300/30"></div>
                         {wallpaper.thumbnail.startsWith("http") ||
                         wallpaper.thumbnail.startsWith("data:image") ? (
@@ -414,6 +433,7 @@ const SettingsPage = () => {
                             src={wallpaper.thumbnail}
                             alt={wallpaper.name}
                             className="w-full h-full object-cover"
+                            loading="lazy"
                           />
                         ) : (
                           <div
@@ -425,14 +445,14 @@ const SettingsPage = () => {
                           className={`absolute inset-0 flex items-center justify-center bg-black/30 opacity-0
                             group-hover:opacity-100 transition-opacity
                             ${selectedWallpaper.id === wallpaper.id ? "opacity-100" : ""}
-                            ${deletingWallpaperId === wallpaper.id || selectingWallpaperId === wallpaper.id ? 'opacity-0' : ''}`}
+                            ${wallpaper.isProcessing || deletingWallpaperId === wallpaper.id || selectingWallpaperId === wallpaper.id ? 'opacity-0' : ''}`}
                         >
                           <div className="bg-primary text-primary-content px-3 py-1 rounded-full text-sm font-medium">
                             {selectedWallpaper.id === wallpaper.id ? "Selected" : "Select"}
                           </div>
                         </div>
                         <div className={`absolute bottom-2 left-2 right-2 text-white text-sm font-medium truncate ${
-                          deletingWallpaperId === wallpaper.id || selectingWallpaperId === wallpaper.id ? 'opacity-0' : ''
+                          wallpaper.isProcessing || deletingWallpaperId === wallpaper.id || selectingWallpaperId === wallpaper.id ? 'opacity-0' : ''
                         }`}>
                           {wallpaper.name}
                         </div>
@@ -452,10 +472,7 @@ const SettingsPage = () => {
                       onChange={handleFileUpload}
                     />
                     {uploading ? (
-                      <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center rounded-xl">
-                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                        <span className="text-primary-content font-medium mt-2">Uploading...</span>
-                      </div>
+                      <Loader2 className="w-8 h-8 text-primary animate-spin" />
                     ) : (
                       <>
                         <UploadCloud className="w-8 h-8 text-base-content/50" />

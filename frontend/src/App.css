@@ -33,3 +33,28 @@
 .text-transparent {
   color: transparent;
 }
+
+
+/* Ensure backdrop effects work consistently */
+@supports (backdrop-filter: blur(1px)) {
+  .chat-backdrop {
+    backdrop-filter: brightness(var(--brightness)) blur(var(--blur));
+  }
+}
+
+/* Fallback for browsers without backdrop-filter support */
+.chat-backdrop {
+  position: relative;
+}
+
+.chat-backdrop::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  filter: brightness(var(--brightness)) blur(var(--blur));
+  z-index: -1;
+}
