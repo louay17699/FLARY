@@ -58,3 +58,82 @@
   filter: brightness(var(--brightness)) blur(var(--blur));
   z-index: -1;
 }
+
+
+
+/* Compact audio player styles */
+audio {
+  height: 32px;
+  min-width: 400px;
+  max-width: 100%;
+  border-radius: 1rem;
+  transition: all 0.2s ease;
+}
+
+audio:hover {
+  transform: scale(1.01);
+}
+
+audio::-webkit-media-controls-panel {
+  border-radius: 1rem;
+  padding: 0 8px;
+  background-color: hsl(var(--b2));
+}
+
+audio::-webkit-media-controls-play-button,
+audio::-webkit-media-controls-mute-button {
+  border-radius: 50%;
+  margin-right: 4px;
+  background-color: hsl(var(--bc));
+}
+
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display {
+  font-size: 0.7rem;
+  font-family: inherit;
+  color: hsl(var(--bc));
+}
+
+audio::-webkit-media-controls-timeline {
+  border-radius: 2px;
+  margin: 0 6px;
+  background-color: hsl(var(--bc) / 0.2);
+}
+
+audio::-webkit-media-controls-timeline::-webkit-slider-thumb {
+  background: hsl(var(--bc));
+}
+
+/* Primary audio style (sent messages) */
+.audio-primary::-webkit-media-controls-panel {
+  background-color: hsl(var(--p));
+}
+
+.audio-primary::-webkit-media-controls-play-button,
+.audio-primary::-webkit-media-controls-mute-button {
+  background-color: hsl(var(--pc));
+}
+
+.audio-primary::-webkit-media-controls-current-time-display,
+.audio-primary::-webkit-media-controls-time-remaining-display {
+  color: hsl(var(--pc));
+}
+
+.audio-primary::-webkit-media-controls-timeline {
+  background-color: hsl(var(--pc) / 0.3);
+}
+
+.audio-primary::-webkit-media-controls-timeline::-webkit-slider-thumb {
+  background: hsl(var(--pc));
+}
+
+/* Base audio style (received messages) */
+.audio-base::-webkit-media-controls-panel {
+  background-color: hsl(var(--b2));
+  border: 1px solid hsl(var(--b3));
+}
+
+.audio-base::-webkit-media-controls-play-button,
+.audio-base::-webkit-media-controls-mute-button {
+  background-color: hsl(var(--bc) / 0.8);
+}

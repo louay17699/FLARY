@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
-import { Image, Send, X, Mic, SmilePlus } from "lucide-react";
+import { Image, Send, X, Mic, SmilePlus, StopCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import imageCompression from 'browser-image-compression';
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,11 +12,16 @@ const MessageInput = () => {
   const [isSendingImage, setIsSendingImage] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioURL, setAudioURL] = useState(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const timerRef = useRef(null);
   const fileInputRef = useRef(null);
   const emojiPickerRef = useRef(null);
   const { sendMessage } = useChatStore();
 
-  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
@@ -59,21 +64,91 @@ const MessageInput = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const removeAudio = () => {
+    setAudioURL(null);
+    audioChunksRef.current = [];
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+    clearInterval(timerRef.current);
+    setRecordingTime(0);
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mp3' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        setAudioURL(audioUrl);
+        setIsRecording(false);
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+      
+      // Start timer
+      timerRef.current = setInterval(() => {
+        setRecordingTime(prev => {
+          if (prev >= 60) { // Stop after 1 minute
+            stopRecording();
+            return 60;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      toast.error("Microphone access denied");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    }
+    clearInterval(timerRef.current);
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!text.trim() && !imagePreview) return;
+    if (!text.trim() && !imagePreview && !audioURL) return;
 
     const toastId = toast.loading("Sending message...");
     setIsSendingImage(true);
 
     try {
+      let voiceBase64 = null;
+      if (audioURL) {
+        const audioBlob = await fetch(audioURL).then(r => r.blob());
+        voiceBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(audioBlob);
+        });
+      }
+
       await sendMessage({
         text: text.trim(),
         image: imagePreview,
+        voice: voiceBase64 ? `data:audio/mp3;base64,${voiceBase64}` : null,
+        duration: recordingTime,
       });
 
       setText("");
       setImagePreview(null);
+      setAudioURL(null);
+      setRecordingTime(0);
       setShowEmojiPicker(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
       toast.success("Message sent", { id: toastId });
@@ -126,10 +201,36 @@ const MessageInput = () => {
             </div>
           </motion.div>
         )}
+
+        {audioURL && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="mb-3 flex items-center gap-2 bg-base-200/50 rounded-xl p-3"
+          >
+            <div className="relative flex-1">
+              <audio src={audioURL} controls className="w-full" />
+              <div className="text-xs text-base-content/50 mt-1">
+                {recordingTime}s
+              </div>
+              <motion.button
+                onClick={removeAudio}
+                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-error text-error-content shadow-sm
+                flex items-center justify-center hover:scale-110 transition-transform"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                type="button"
+                disabled={isSendingImage}
+              >
+                <X className="size-3" />
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-        
         <input
           type="file"
           accept="image/*"
@@ -139,7 +240,6 @@ const MessageInput = () => {
           disabled={isSendingImage}
         />
         
-       
         <div className="flex items-center gap-1">
           <motion.button
             type="button"
@@ -152,6 +252,23 @@ const MessageInput = () => {
             <Image size={20} />
           </motion.button>
           
+          <motion.button
+            type="button"
+            className={`btn btn-ghost btn-sm btn-circle ${
+              isRecording ? "text-error" : "text-base-content/70 hover:text-secondary"
+            }`}
+            onClick={isRecording ? stopRecording : startRecording}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            disabled={isSendingImage}
+          >
+            {isRecording ? (
+              <StopCircle size={20} className="animate-pulse" />
+            ) : (
+              <Mic size={20} />
+            )}
+          </motion.button>
+
           <motion.button 
             type="button" 
             className="btn btn-ghost btn-sm btn-circle text-base-content/70 hover:text-secondary"
@@ -163,17 +280,16 @@ const MessageInput = () => {
           </motion.button>
         </div>
 
-        
         <div className="flex-1 relative">
           <motion.input
             type="text"
             className={`w-full input input-bordered rounded-full pl-4 pr-12 transition-all ${
               isFocused ? "input-primary border-2" : ""
             }`}
-            placeholder="Type a message..."
+            placeholder={isRecording ? `Recording... ${recordingTime}s` : "Type a message..."}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            disabled={isSendingImage}
+            disabled={isSendingImage || isRecording}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             animate={{
@@ -181,30 +297,37 @@ const MessageInput = () => {
             }}
           />
           
-          {!text && !isFocused && (
-            <motion.button
-              type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-ghost btn-sm btn-circle text-base-content/50 hover:text-base-content"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <Mic size={20} />
-            </motion.button>
-          )}
+{!text && !isFocused && !isRecording && (
+  <motion.button
+    type="button"
+    className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-ghost btn-sm btn-circle text-base-content/50 hover:text-base-content"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    onClick={isRecording ? stopRecording : startRecording}
+    disabled={isSendingImage}
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+  >
+    {isRecording ? (
+      <StopCircle size={20} className="animate-pulse text-error" />
+    ) : (
+      <Mic size={20} />
+    )}
+  </motion.button>
+)}
         </div>
 
-       
         <motion.button
           type="submit"
           className={`btn btn-circle ${
-            (text.trim() || imagePreview) 
+            (text.trim() || imagePreview || audioURL) 
               ? "btn-primary text-primary-content" 
               : "btn-ghost text-base-content/30"
           }`}
-          disabled={(!text.trim() && !imagePreview) || isSendingImage}
-          whileHover={ (text.trim() || imagePreview) ? { scale: 1.05 } : {} }
-          whileTap={ (text.trim() || imagePreview) ? { scale: 0.95 } : {} }
+          disabled={(!text.trim() && !imagePreview && !audioURL) || isSendingImage || isRecording}
+          whileHover={ (text.trim() || imagePreview || audioURL) ? { scale: 1.05 } : {} }
+          whileTap={ (text.trim() || imagePreview || audioURL) ? { scale: 0.95 } : {} }
         >
           {isSendingImage ? (
             <span className="loading loading-spinner loading-xs"></span>
@@ -214,7 +337,6 @@ const MessageInput = () => {
         </motion.button>
       </form>
 
-    
       <AnimatePresence>
         {showEmojiPicker && (
           <motion.div

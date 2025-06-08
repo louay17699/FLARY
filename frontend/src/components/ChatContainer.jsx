@@ -8,6 +8,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 import { useWallpaperStore } from "../store/useWallpaperStore";
 
+
 const ChatContainer = () => {
   const {
     messages,
@@ -44,29 +45,25 @@ const ChatContainer = () => {
     );
   }
 
-  return (
+return (
     <div className="flex-1 flex flex-col bg-base-100 rounded-xl overflow-hidden border border-base-300">
       <ChatHeader />
 
-     
       <div 
         className="flex-1 overflow-y-auto p-4"
-  style={{
-    backgroundImage: selectedWallpaper.url ? `url(${selectedWallpaper.url})` : undefined,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundAttachment: 'fixed',
-    // Apply blur directly to the background image
-    filter: selectedWallpaper.url 
-      ? `brightness(${brightness}) blur(${blurIntensity})` 
-      : undefined,
-    // Fallback for older browsers
-    WebkitFilter: selectedWallpaper.url 
-      ? `brightness(${brightness}) blur(${blurIntensity})` 
-      : undefined,
-    // Ensure content stays sharp
-    isolation: 'isolate'
-  }}
+        style={{
+          backgroundImage: selectedWallpaper.url ? `url(${selectedWallpaper.url})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+          filter: selectedWallpaper.url 
+            ? `brightness(${brightness}) blur(${blurIntensity})` 
+            : undefined,
+          WebkitFilter: selectedWallpaper.url 
+            ? `brightness(${brightness}) blur(${blurIntensity})` 
+            : undefined,
+          isolation: 'isolate'
+        }}
       >
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-4">
@@ -122,6 +119,27 @@ const ChatContainer = () => {
                         )}
                       </div>
                     )}
+
+{message.voice && (
+  <div className={`mb-1 ${message.senderId === authUser._id ? 'items-end' : 'items-start'}`}>
+    <div className={`flex flex-col ${message.senderId === authUser._id ? 'items-end' : 'items-start'}`}>
+      <audio 
+        src={message.voice} 
+        controls 
+        className={`w-full max-w-[220px] h-8 ${message.senderId === authUser._id ? 
+          'audio-primary' : 
+          'audio-base'}`}
+      />
+      <div className={`text-xs mt-0.5 ${
+        message.senderId === authUser._id ? 
+          'text-primary-content/70' : 
+          'text-base-content/70'
+      }`}>
+        {message.duration}s
+      </div>
+    </div>
+  </div>
+)}
 
                     {message.text && <p className="text-sm md:text-base">{message.text}</p>}
                   </div>
