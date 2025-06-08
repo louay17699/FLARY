@@ -38,7 +38,7 @@ const Navbar = () => {
                   />
                   <div className="absolute -bottom-0.5 -right-0.5 bg-green-500 rounded-full w-2.5 h-2.5 border border-white"></div>
                 </div>
-                <span className="font-medium">
+                <span>
                   {authUser.username || 'Profile'}
                 </span>
               </Link>
@@ -48,7 +48,7 @@ const Navbar = () => {
               to="/settings"
               className="btn btn-sm h-10 gap-2 hover:bg-primary/10 hover:text-primary transition-colors"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-5 h-5" />
               <span className="hidden sm:inline">Settings</span>
             </Link>
 
