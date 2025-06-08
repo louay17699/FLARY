@@ -36,11 +36,11 @@ export const getMessages = async (req,res)=> {
 
 export const sendMessage = async (req, res) => {
     try {
-        const { text, image } = req.body;
+        const { text, image, voice, duration } = req.body;
         const { id:receiverId } = req.params;
         const senderId = req.user._id;
 
-        if (!text && !image) {
+        if (!text && !image && !voice) {
             return res.status(400).json({message: "Message content is required"});
         }
 
@@ -65,11 +65,31 @@ export const sendMessage = async (req, res) => {
             }
         }
 
+        let voiceURL;
+        if (voice) {
+            try {
+                const uploadResponse = await cloudinary.uploader.upload(voice, {
+                    resource_type: "video",
+                    format: "mp3",
+                    timeout: 60000, // 1 minute timeout
+                });
+                voiceURL = uploadResponse.secure_url;
+            } catch (uploadError) {
+                console.error("Cloudinary upload error for voice:", uploadError);
+                return res.status(400).json({
+                    message: "Failed to upload voice message",
+                    details: uploadError.message
+                });
+            }
+        }
+
         const newMessage = new Message({
             senderId,
             receiverId,
             text,
             image: imageURL,
+            voice: voiceURL,
+            duration: duration || 0,
         });
 
         await newMessage.save();
