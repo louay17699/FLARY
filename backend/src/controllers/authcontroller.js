@@ -69,12 +69,14 @@ export const login = async (req, res) => {
 
         generateToken(user._id,res);
 
-        res.status(200).json({
-            _id: user._id,
-            fullName: user.fullName,
-            email: user.email,
-            profilePic: user.profilePic,
-        })
+res.status(200).json({
+  _id: user._id,
+  fullName: user.fullName,
+  email: user.email,
+  profilePic: user.profilePic,
+  lastOnline: user.lastOnline, 
+  createdAt: user.createdAt 
+})
 
         
     } catch (error) {
@@ -96,19 +98,16 @@ export const logout = (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { profilePic, fullName } = req.body;
+    const { profilePic, fullName, bio } = req.body;
     const userId = req.user._id;
 
-    // Validate at least one field is being updated
-    if (!profilePic && !fullName) {
+    if (!profilePic && !fullName && bio === undefined) {
       return res.status(400).json({ message: "At least one field is required for update" });
     }
 
     const updateData = {};
     
-    // Handle profile picture update
     if (profilePic) {
-      // Remove any existing Cloudinary image if needed
       const user = await User.findById(userId);
       if (user.profilePic) {
         const publicId = user.profilePic.split('/').pop().split('.')[0];
@@ -119,7 +118,6 @@ export const updateProfile = async (req, res) => {
         }
       }
 
-      // Upload new image with optimized settings
       const uploadResponse = await cloudinary.uploader.upload(profilePic, {
         folder: "profile_pictures",
         resource_type: "auto",
@@ -133,12 +131,18 @@ export const updateProfile = async (req, res) => {
       updateData.profilePic = uploadResponse.secure_url;
     }
 
-    // Handle name update
     if (fullName) {
       if (fullName.trim().length < 2) {
         return res.status(400).json({ message: "Full name must be at least 2 characters" });
       }
       updateData.fullName = fullName.trim();
+    }
+
+    if (bio !== undefined) {
+      if (bio.length > 500) {
+        return res.status(400).json({ message: "Bio must be 500 characters or less" });
+      }
+      updateData.bio = bio;
     }
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -160,7 +164,10 @@ export const updateProfile = async (req, res) => {
 
 export const checkAuth = (req, res) => {
         try {
-            res.status(200).json(req.user)
+            res.status(200).json({
+  ...req.user.toObject(), 
+  password: undefined 
+})
         } catch (error) {
             console.log("error in auth check",error.message)
             res.status(500).json({message:"server error"})

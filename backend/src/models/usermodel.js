@@ -20,6 +20,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+        bio: {
+      type: String,
+      default: "",
+      maxlength: 500,
+    },
+    lastOnline: {
+  type: Date,
+  default: null
+  },
     wallpaperSettings: {
       selectedWallpaperId: { type: String, default: "default-1" },
       blurIntensity: { type: String, default: "4px" },
