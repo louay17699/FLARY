@@ -39,7 +39,7 @@ const Navbar = () => {
                   <div className="absolute -bottom-0.5 -right-0.5 bg-green-500 rounded-full w-2.5 h-2.5 border border-white"></div>
                 </div>
                 <span>
-                  {authUser.username || 'Profile'}
+                  {authUser.fullName || 'Profile'}
                 </span>
               </Link>
             )}

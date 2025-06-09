@@ -10,6 +10,7 @@ export const useChatStore = create((set, get) => ({
   isUsersLoading: false,
   isMessagesLoading: false,
   searchQuery: "",
+  viewingProfile: false, // Added for profile viewing state
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -45,30 +46,33 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-subscribeToMessages: () => {
-  const { selectedUser } = get();
-  if (!selectedUser) return;
+  subscribeToMessages: () => {
+    const { selectedUser } = get();
+    if (!selectedUser) return;
 
-  const socket = useAuthStore.getState().socket;
-  if (!socket) return;  
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;  
 
-  socket.on("newMessage", (newMessage) => {
-    const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-    if (!isMessageSentFromSelectedUser) return;
+    socket.on("newMessage", (newMessage) => {
+      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
+      if (!isMessageSentFromSelectedUser) return;
 
-    set({
-      messages: [...get().messages, newMessage],
+      set({
+        messages: [...get().messages, newMessage],
+      });
     });
-  });
-},
+  },
 
-unsubscribeFromMessages: () => {
-  const socket = useAuthStore.getState().socket;
-  if (socket) {  
-    socket.off("newMessage");
-  }
-},
+  unsubscribeFromMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    if (socket) {  
+      socket.off("newMessage");
+    }
+  },
 
   setSelectedUser: (selectedUser) => set({ selectedUser }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
+  
+  // Added for profile viewing functionality
+  setViewingProfile: (viewing) => set({ viewingProfile: viewing }),
 }));

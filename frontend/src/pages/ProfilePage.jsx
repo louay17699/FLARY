@@ -9,14 +9,15 @@ const ProfilePage = () => {
   const [selectedImg, setSelectedImg] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
-    fullName: ""
+    fullName: "",
+    bio: ""
   });
 
-  
   useEffect(() => {
     if (authUser) {
       setEditData({
-        fullName: authUser.fullName || ""
+        fullName: authUser.fullName || "",
+        bio: authUser.bio || ""
       });
     }
   }, [authUser]);
@@ -57,7 +58,10 @@ const ProfilePage = () => {
     }
 
     try {
-      await updateProfile({ fullName: editData.fullName });
+      await updateProfile({ 
+        fullName: editData.fullName,
+        bio: editData.bio 
+      });
       setIsEditing(false);
       toast.success("Profile updated successfully!");
     } catch (error) {
@@ -68,7 +72,6 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-base-100 to-secondary/5 pt-20 pb-10">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Your Profile
@@ -79,10 +82,8 @@ const ProfilePage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
           <div className="lg:col-span-1">
             <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-6">
-              
               <div className="flex flex-col items-center gap-4 mb-6">
                 <div className="relative group">
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary to-secondary opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
@@ -93,13 +94,11 @@ const ProfilePage = () => {
                   />
                   <label
                     htmlFor="avatar-upload"
-                    className={`
-                      absolute bottom-2 right-2 
+                    className={`absolute bottom-2 right-2 
                       bg-primary hover:bg-primary-focus
                       p-2 rounded-full cursor-pointer 
                       transition-all duration-200 shadow-md
-                      ${isUpdatingProfile ? "animate-pulse pointer-events-none" : ""}
-                    `}
+                      ${isUpdatingProfile ? "animate-pulse pointer-events-none" : ""}`}
                   >
                     <Camera className="w-5 h-5 text-white" />
                     <input
@@ -118,7 +117,6 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              
               <div className="space-y-4">
                 <div className="flex items-center gap-3 p-3 bg-base-200 rounded-lg">
                   <div className="p-2 rounded-full bg-primary/10 text-primary">
@@ -152,7 +150,6 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          
           <div className="lg:col-span-2">
             <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-6">
               <div className="flex justify-between items-center mb-6">
@@ -193,7 +190,6 @@ const ProfilePage = () => {
               </div>
 
               <div className="space-y-6">
-                
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text flex items-center gap-2">
@@ -216,7 +212,6 @@ const ProfilePage = () => {
                   )}
                 </div>
 
-                
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text flex items-center gap-2">
@@ -229,23 +224,44 @@ const ProfilePage = () => {
                   </div>
                 </div>
 
-                
                 <div className="divider"></div>
                 
-                <div>
-                  <h3 className="font-medium mb-3">About Me</h3>
-                  <div className="px-4 py-3 bg-base-200 rounded-lg min-h-24">
-                    {authUser?.bio || (
-                      <p className="text-base-content/50 italic">
-                        Tell us something about yourself...
-                      </p>
-                    )}
-                  </div>
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text flex items-center gap-2">
+                      About Me
+                    </span>
+                  </label>
+                  {isEditing ? (
+                    <textarea
+                      className="textarea textarea-bordered w-full"
+                      value={editData.bio}
+                      onChange={(e) => setEditData({...editData, bio: e.target.value})}
+                      disabled={isUpdatingProfile}
+                      placeholder="Tell us something about yourself..."
+                      rows={4}
+                      maxLength={500}
+                    />
+                  ) : (
+                    <div className="px-4 py-3 bg-base-200 rounded-lg min-h-24">
+                      {authUser?.bio || (
+                        <p className="text-base-content/50 italic">
+                          Tell us something about yourself...
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {isEditing && (
+                    <div className="label">
+                      <span className="label-text-alt">
+                        {editData.bio.length}/500 characters
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-6">
                 <h3 className="font-semibold mb-4">Account Security</h3>
@@ -266,4 +282,5 @@ const ProfilePage = () => {
     </div>
   );
 };
+
 export default ProfilePage;

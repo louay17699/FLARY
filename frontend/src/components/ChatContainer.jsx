@@ -1,4 +1,3 @@
-
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef, useState } from "react";
 import ChatHeader from "./ChatHeader";
@@ -7,7 +6,7 @@ import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 import { useWallpaperStore } from "../store/useWallpaperStore";
-
+import UserProfileView from "./UserProfileView"; // Add this import
 
 const ChatContainer = () => {
   const {
@@ -17,6 +16,8 @@ const ChatContainer = () => {
     selectedUser,
     subscribeToMessages,
     unsubscribeFromMessages,
+    viewingProfile, // Add this
+    setViewingProfile, // Add this
   } = useChatStore();
   const { authUser } = useAuthStore();
   const { selectedWallpaper, blurIntensity, brightness } = useWallpaperStore();
@@ -45,7 +46,7 @@ const ChatContainer = () => {
     );
   }
 
-return (
+  return (
     <div className="flex-1 flex flex-col bg-base-100 rounded-xl overflow-hidden border border-base-300">
       <ChatHeader />
 
@@ -120,26 +121,26 @@ return (
                       </div>
                     )}
 
-{message.voice && (
-  <div className={`mb-1 ${message.senderId === authUser._id ? 'items-end' : 'items-start'}`}>
-    <div className={`flex flex-col ${message.senderId === authUser._id ? 'items-end' : 'items-start'}`}>
-      <audio 
-        src={message.voice} 
-        controls 
-        className={`w-full max-w-[220px] h-8 ${message.senderId === authUser._id ? 
-          'audio-primary' : 
-          'audio-base'}`}
-      />
-      <div className={`text-xs mt-0.5 ${
-        message.senderId === authUser._id ? 
-          'text-primary-content/70' : 
-          'text-base-content/70'
-      }`}>
-        {message.duration}s
-      </div>
-    </div>
-  </div>
-)}
+                    {message.voice && (
+                      <div className={`mb-1 ${message.senderId === authUser._id ? 'items-end' : 'items-start'}`}>
+                        <div className={`flex flex-col ${message.senderId === authUser._id ? 'items-end' : 'items-start'}`}>
+                          <audio 
+                            src={message.voice} 
+                            controls 
+                            className={`w-full max-w-[220px] h-8 ${message.senderId === authUser._id ? 
+                              'audio-primary' : 
+                              'audio-base'}`}
+                          />
+                          <div className={`text-xs mt-0.5 ${
+                            message.senderId === authUser._id ? 
+                              'text-primary-content/70' : 
+                              'text-base-content/70'
+                          }`}>
+                            {message.duration}s
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {message.text && <p className="text-sm md:text-base">{message.text}</p>}
                   </div>
@@ -170,7 +171,7 @@ return (
 
       <MessageInput />
 
-      
+      {/* Image Preview Modal */}
       {selectedImage && (
         <div className="modal modal-open">
           <div className="modal-box max-w-5xl h-[90vh] flex flex-col">
@@ -203,6 +204,9 @@ return (
           </div>
         </div>
       )}
+
+      {/* User Profile View Modal */}
+      {viewingProfile && <UserProfileView />}
     </div>
   );
 };

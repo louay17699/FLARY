@@ -2,9 +2,10 @@ import { X, MoreVertical, Phone, Video, Search } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 import { motion } from "framer-motion";
+import { formatRelativeTime } from "../lib/formatTime";
 
 const ChatHeader = () => {
-  const { selectedUser, setSelectedUser } = useChatStore();
+  const { selectedUser, setSelectedUser , setViewingProfile } = useChatStore();
   const { onlineUsers } = useAuthStore();
   const isOnline = onlineUsers.includes(selectedUser._id);
 
@@ -19,8 +20,9 @@ const ChatHeader = () => {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           
           <motion.div 
-            whileHover={{ scale: 1.05 }}
-            className="relative"
+              whileHover={{ scale: 1.05 }}
+              className="relative cursor-pointer"
+              onClick={() => setViewingProfile(true)}
           >
             <div className="avatar">
               <div className="size-12 rounded-full relative ring-2 ring-offset-2 ring-offset-base-100"
@@ -88,7 +90,9 @@ const ChatHeader = () => {
                     </motion.span>
                   </span>
                 ) : (
-                  "Offline"
+                  <span className="flex items-center gap-1">
+  <span>{formatRelativeTime(selectedUser.lastOnline)}</span>
+</span>
                 )}
               </p>
             </motion.div>

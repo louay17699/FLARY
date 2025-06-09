@@ -172,9 +172,22 @@ checkAuth: async () => {
       set({ onlineUsers: userIds });
     });
 
-    socket.on("connect_error", (err) => {
-      console.error("Socket connection error:", err);
-    });
+socket.on("userStatusUpdate", (updatedUser) => {
+  set((state) => {
+   
+    if (state.authUser?._id === updatedUser._id) {
+      return { 
+        authUser: {
+          ...state.authUser,
+          lastOnline: updatedUser.lastOnline
+        }
+      };
+    }
+    return state;
+  });
+  
+  
+});
   },
 
   disconnectSocket: () => {

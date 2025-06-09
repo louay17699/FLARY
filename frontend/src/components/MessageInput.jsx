@@ -297,25 +297,7 @@ const MessageInput = () => {
             }}
           />
           
-{!text && !isFocused && !isRecording && (
-  <motion.button
-    type="button"
-    className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-ghost btn-sm btn-circle text-base-content/50 hover:text-base-content"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    onClick={isRecording ? stopRecording : startRecording}
-    disabled={isSendingImage}
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-  >
-    {isRecording ? (
-      <StopCircle size={20} className="animate-pulse text-error" />
-    ) : (
-      <Mic size={20} />
-    )}
-  </motion.button>
-)}
+
         </div>
 
         <motion.button
