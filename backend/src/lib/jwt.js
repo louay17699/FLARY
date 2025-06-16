@@ -6,12 +6,12 @@ export const generateToken =(userId,res)=>{
         expiresIn: "7d",
     })
 
-  res.cookie("jwt", token, {
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    httpOnly: true,
-    sameSite: "none",  // ← Must be "none" for cross-site
-    secure: true,      // ← Must be true with sameSite: none
-    domain: "flary-frontend.onrender.com" // ← Your exact domain
-  });
+res.cookie("jwt", token, {
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  httpOnly: true,
+  sameSite: "none",
+  secure: true,
+  
+});
     return token;
 }
