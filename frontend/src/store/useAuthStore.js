@@ -29,43 +29,17 @@ export const useAuthStore = create((set, get) => ({
   },
 
 
-// Update the checkAuth function
 checkAuth: async () => {
-  set({ isCheckingAuth: true });
   try {
     const res = await axiosInstance.get("/auth/check");
-    if (res.data) {
-      set({ authUser: res.data });
-      get().connectSocket();
-      // Ensure token is in localStorage for mobile
-      const token = localStorage.getItem("authToken");
-      if (!token && res.data.token) {
-        localStorage.setItem("authToken", res.data.token);
-      }
-    } else {
-      set({ authUser: null });
-      localStorage.removeItem("authToken");
-    }
+    set({ authUser: res.data });
+    get().connectSocket();
+   
+    await useWallpaperStore.getState().initializeFromAuthUser();
   } catch (error) {
-    console.log("Auth check failed", error);
-    // For mobile, try with token from localStorage
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      try {
-        const verifyRes = await axiosInstance.get("/auth/check", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (verifyRes.data) {
-          set({ authUser: verifyRes.data });
-          get().connectSocket();
-          return;
-        }
-      } catch (e) {
-        console.log("Token verification failed", e);
-      }
-    }
+    console.log("Error in checkAuth:", error);
     set({ authUser: null });
-    localStorage.removeItem("authToken");
+    useWallpaperStore.getState().reset();
   } finally {
     set({ isCheckingAuth: false });
   }
@@ -86,24 +60,20 @@ checkAuth: async () => {
     }
   },
 
- login: async (data) => {
-  set({ isLoggingIn: true });
-  try {
-    const res = await axiosInstance.post("/auth/login", data);
-    
-    // If on mobile, store token in localStorage
-    if (res.data.token) {
-      localStorage.setItem("authToken", res.data.token);
-      axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
+  login: async (data) => {
+    set({ isLoggingIn: true });
+    try {
+      const res = await axiosInstance.post("/auth/login", data);
+      set({ authUser: res.data });
+      toast.success("Logged in successfully");
+      get().connectSocket();
+      await get().initializeWallpaper();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Login failed");
+    } finally {
+      set({ isLoggingIn: false });
     }
-
-    set({ authUser: res.data.user });
-  } catch (error) {
-    toast.error("Login failed");
-  } finally {
-    set({ isLoggingIn: false });
-  }
-},
+  },
 
   logout: async () => {
     try {
@@ -184,37 +154,23 @@ checkAuth: async () => {
     }
   },
 
-connectSocket: () => {
-  const { authUser } = get();
-  if (!authUser || get().socket?.connected) return;
+  connectSocket: () => {
+    const { authUser } = get();
+    if (!authUser || get().socket?.connected) return;
 
-  const socket = io(BASE_URL, {
-    query: {
-      userId: authUser._id,
-    },
-    transports: ["websocket", "polling"], // Important for mobile
-    upgrade: true,
-    forceNew: true,
-    reconnection: true,
-    reconnectionAttempts: 5,
-    reconnectionDelay: 1000,
-    reconnectionDelayMax: 5000,
-    timeout: 20000,
-  });
+    const socket = io(BASE_URL, {
+      query: {
+        userId: authUser._id,
+      },
+    });
 
-  socket.on("connect_error", (err) => {
-    console.log("Socket connection error:", err);
-    // Try reconnecting after delay
-    setTimeout(() => get().connectSocket(), 2000);
-  });
+    socket.connect();
 
-  socket.connect();
+    set({ socket });
 
-  set({ socket });
-
-  socket.on("getOnlineUsers", (userIds) => {
-    set({ onlineUsers: userIds });
-  });
+    socket.on("getOnlineUsers", (userIds) => {
+      set({ onlineUsers: userIds });
+    });
 
 socket.on("userStatusUpdate", (updatedUser) => {
   set((state) => {
