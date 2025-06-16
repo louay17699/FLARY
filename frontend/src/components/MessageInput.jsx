@@ -96,10 +96,9 @@ const MessageInput = () => {
       mediaRecorderRef.current.start();
       setIsRecording(true);
       
-      // Start timer
       timerRef.current = setInterval(() => {
         setRecordingTime(prev => {
-          if (prev >= 60) { // Stop after 1 minute
+          if (prev >= 60) {
             stopRecording();
             return 60;
           }
@@ -165,20 +164,20 @@ const MessageInput = () => {
   };
 
   return (
-    <div className="p-4 w-full bg-base-100/80 backdrop-blur-sm border-t border-base-300/50 relative">
+    <div className="p-2 md:p-4 w-full bg-base-100/80 backdrop-blur-sm border-t border-base-300/50 relative">
       <AnimatePresence>
         {imagePreview && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="mb-3 flex items-center gap-2"
+            className="mb-2 md:mb-3 flex items-center gap-2"
           >
             <div className="relative group">
               <img
                 src={imagePreview}
                 alt="Preview"
-                className={`w-24 h-24 object-cover rounded-xl border-2 border-base-300/30 shadow-sm ${
+                className={`w-16 h-16 md:w-24 md:h-24 object-cover rounded-xl border-2 border-base-300/30 shadow-sm ${
                   isSendingImage ? "opacity-70" : "group-hover:brightness-95 transition-all"
                 }`}
               />
@@ -189,14 +188,14 @@ const MessageInput = () => {
               )}
               <motion.button
                 onClick={removeImage}
-                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-error text-error-content shadow-sm
+                className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 rounded-full bg-error text-error-content shadow-sm
                 flex items-center justify-center hover:scale-110 transition-transform"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 type="button"
                 disabled={isSendingImage}
               >
-                <X className="size-3" />
+                <X className="size-2 md:size-3" />
               </motion.button>
             </div>
           </motion.div>
@@ -207,7 +206,7 @@ const MessageInput = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="mb-3 flex items-center gap-2 bg-base-200/50 rounded-xl p-3"
+            className="mb-2 md:mb-3 flex items-center gap-2 bg-base-200/50 rounded-xl p-2 md:p-3"
           >
             <div className="relative flex-1">
               <audio src={audioURL} controls className="w-full" />
@@ -216,14 +215,14 @@ const MessageInput = () => {
               </div>
               <motion.button
                 onClick={removeAudio}
-                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-error text-error-content shadow-sm
+                className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 rounded-full bg-error text-error-content shadow-sm
                 flex items-center justify-center hover:scale-110 transition-transform"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 type="button"
                 disabled={isSendingImage}
               >
-                <X className="size-3" />
+                <X className="size-2 md:size-3" />
               </motion.button>
             </div>
           </motion.div>
@@ -249,7 +248,7 @@ const MessageInput = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Image size={20} />
+            <Image size={18} />
           </motion.button>
           
           <motion.button
@@ -263,9 +262,9 @@ const MessageInput = () => {
             disabled={isSendingImage}
           >
             {isRecording ? (
-              <StopCircle size={20} className="animate-pulse" />
+              <StopCircle size={18} className="animate-pulse" />
             ) : (
-              <Mic size={20} />
+              <Mic size={18} />
             )}
           </motion.button>
 
@@ -276,14 +275,14 @@ const MessageInput = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <SmilePlus size={20} />
+            <SmilePlus size={18} />
           </motion.button>
         </div>
 
         <div className="flex-1 relative">
           <motion.input
             type="text"
-            className={`w-full input input-bordered rounded-full pl-4 pr-12 transition-all ${
+            className={`w-full input input-bordered rounded-full pl-3 pr-10 md:pl-4 md:pr-12 transition-all ${
               isFocused ? "input-primary border-2" : ""
             }`}
             placeholder={isRecording ? `Recording... ${recordingTime}s` : "Type a message..."}
@@ -293,16 +292,14 @@ const MessageInput = () => {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             animate={{
-              paddingRight: isFocused || text ? '3.5rem' : '4.5rem'
+              paddingRight: isFocused || text ? '2.5rem' : '3.5rem'
             }}
           />
-          
-
         </div>
 
         <motion.button
           type="submit"
-          className={`btn btn-circle ${
+          className={`btn btn-circle btn-sm md:btn-md ${
             (text.trim() || imagePreview || audioURL) 
               ? "btn-primary text-primary-content" 
               : "btn-ghost text-base-content/30"
@@ -314,7 +311,7 @@ const MessageInput = () => {
           {isSendingImage ? (
             <span className="loading loading-spinner loading-xs"></span>
           ) : (
-            <Send size={20} />
+            <Send size={18} />
           )}
         </motion.button>
       </form>
@@ -326,12 +323,12 @@ const MessageInput = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ type: "spring", damping: 20 }}
-            className="absolute bottom-20 left-16 z-50 shadow-xl rounded-lg overflow-hidden"
+            className="absolute bottom-16 left-2 md:bottom-20 md:left-16 z-50 shadow-xl rounded-lg overflow-hidden"
             ref={emojiPickerRef}
           >
             <EmojiPicker 
               onEmojiClick={onEmojiClick}
-              width={300}
+              width={280}
               height={350}
               previewConfig={{ showPreview: false }}
               theme="dark"

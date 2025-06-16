@@ -5,27 +5,27 @@ import { motion } from "framer-motion";
 import { formatRelativeTime } from "../lib/formatTime";
 
 const ChatHeader = () => {
-  const { selectedUser, setSelectedUser , setViewingProfile } = useChatStore();
+  const { selectedUser, setSelectedUser, setViewingProfile } = useChatStore();
   const { onlineUsers } = useAuthStore();
-  const isOnline = onlineUsers.includes(selectedUser._id);
+  const isOnline = onlineUsers.includes(selectedUser?._id);
+
+  if (!selectedUser) return null;
 
   return (
     <motion.div 
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="px-5 py-3 border-b border-base-300/50 bg-base-100/80 backdrop-blur-md"
+      className="px-3 md:px-5 py-3 border-b border-base-300/50 bg-base-100/80 backdrop-blur-md"
     >
       <div className="flex items-center justify-between">
-     
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="relative cursor-pointer"
-              onClick={() => setViewingProfile(true)}
+            whileHover={{ scale: 1.05 }}
+            className="relative cursor-pointer"
+            onClick={() => setViewingProfile(true)}
           >
             <div className="avatar">
-              <div className="size-12 rounded-full relative ring-2 ring-offset-2 ring-offset-base-100"
+              <div className="size-10 md:size-12 rounded-full relative ring-2 ring-offset-2 ring-offset-base-100"
                 style={{
                   ringColor: isOnline ? '#10b981' : '#9ca3af',
                   transition: 'ring-color 0.3s ease'
@@ -38,7 +38,6 @@ const ChatHeader = () => {
                 />
               </div>
             </div>
-            
             
             {isOnline && (
               <motion.div
@@ -54,13 +53,12 @@ const ChatHeader = () => {
             )}
           </motion.div>
 
-          
           <div className="flex-1 min-w-0">
             <motion.div whileHover={{ x: 2 }}>
-              <h3 className="font-semibold text-lg truncate">
+              <h3 className="font-semibold text-base md:text-lg truncate">
                 {selectedUser.fullName}
               </h3>
-              <p className={`text-sm flex items-center gap-1.5 ${
+              <p className={`text-xs md:text-sm flex items-center gap-1.5 ${
                 isOnline 
                   ? "text-green-600 dark:text-green-400" 
                   : "text-base-content/60"
@@ -74,7 +72,7 @@ const ChatHeader = () => {
                     repeat: Infinity,
                     repeatDelay: 3
                   }}
-                  className={`inline-block size-2.5 rounded-full ${
+                  className={`inline-block size-2 md:size-2.5 rounded-full ${
                     isOnline ? "bg-green-500" : "bg-gray-500"
                   }`}
                 />
@@ -84,28 +82,26 @@ const ChatHeader = () => {
                     <motion.span
                       animate={{ opacity: [0.6, 1, 0.6] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
-                      className="text-xs"
+                      className="text-xs hidden sm:inline"
                     >
                       • Active now
                     </motion.span>
                   </span>
                 ) : (
                   <span className="flex items-center gap-1">
-  <span>{formatRelativeTime(selectedUser.lastOnline)}</span>
-</span>
+                    <span>{formatRelativeTime(selectedUser.lastOnline)}</span>
+                  </span>
                 )}
               </p>
             </motion.div>
           </div>
         </div>
 
-      
         <div className="flex items-center gap-1">
-         
           <motion.button 
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            className="btn btn-ghost btn-sm btn-square text-primary/80 hover:text-primary hover:bg-primary/10"
+            className="btn btn-ghost btn-sm btn-square text-primary/80 hover:text-primary hover:bg-primary/10 hidden sm:inline-flex"
           >
             <Phone size={18} />
           </motion.button>
@@ -113,7 +109,7 @@ const ChatHeader = () => {
           <motion.button 
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            className="btn btn-ghost btn-sm btn-square text-secondary/80 hover:text-secondary hover:bg-secondary/10"
+            className="btn btn-ghost btn-sm btn-square text-secondary/80 hover:text-secondary hover:bg-secondary/10 hidden sm:inline-flex"
           >
             <Video size={18} />
           </motion.button>
@@ -121,14 +117,12 @@ const ChatHeader = () => {
           <motion.button 
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            className="btn btn-ghost btn-sm btn-square text-base-content/70 hover:text-base-content"
+            className="btn btn-ghost btn-sm btn-square text-base-content/70 hover:text-base-content hidden sm:inline-flex"
           >
             <Search size={18} />
           </motion.button>
           
-         
-          <div className="h-6 w-px bg-base-300 mx-1"></div>
-          
+          <div className="h-6 w-px bg-base-300 mx-1 hidden sm:block"></div>
           
           <motion.button 
             onClick={() => setSelectedUser(null)}

@@ -6,7 +6,7 @@ import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 import { useWallpaperStore } from "../store/useWallpaperStore";
-import UserProfileView from "./UserProfileView"; // Add this import
+import UserProfileView from "./UserProfileView";
 
 const ChatContainer = () => {
   const {
@@ -16,8 +16,8 @@ const ChatContainer = () => {
     selectedUser,
     subscribeToMessages,
     unsubscribeFromMessages,
-    viewingProfile, // Add this
-    setViewingProfile, // Add this
+    viewingProfile,
+    setViewingProfile,
   } = useChatStore();
   const { authUser } = useAuthStore();
   const { selectedWallpaper, blurIntensity, brightness } = useWallpaperStore();
@@ -25,10 +25,12 @@ const ChatContainer = () => {
   const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
-    getMessages(selectedUser._id);
-    subscribeToMessages();
-    return () => unsubscribeFromMessages();
-  }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+    if (selectedUser?._id) {
+      getMessages(selectedUser._id);
+      subscribeToMessages();
+      return () => unsubscribeFromMessages();
+    }
+  }, [selectedUser?._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -51,7 +53,7 @@ const ChatContainer = () => {
       <ChatHeader />
 
       <div 
-        className="flex-1 overflow-y-auto p-4"
+        className="flex-1 overflow-y-auto p-2 md:p-4"
         style={{
           backgroundImage: selectedWallpaper.url ? `url(${selectedWallpaper.url})` : undefined,
           backgroundSize: 'cover',
@@ -72,7 +74,7 @@ const ChatContainer = () => {
               <div className="text-5xl mb-4">👋</div>
               <h3 className="text-xl font-bold">Start the conversation</h3>
               <p className="text-base-content/70">
-                Say hello to {selectedUser.fullName} and start chatting on Flary!
+                Say hello to {selectedUser?.fullName} and start chatting on Flary!
               </p>
               <div className="mt-6 p-4 bg-base-100 rounded-lg border border-base-300">
                 <p className="font-mono text-sm">"Hey, I'm using Flary!"</p>
@@ -90,7 +92,7 @@ const ChatContainer = () => {
                   <div className="avatar self-end mr-2 mb-1">
                     <div className="w-8 h-8 rounded-full border-2 border-base-100">
                       <img
-                        src={selectedUser.profilePic || "/avatar.png"}
+                        src={selectedUser?.profilePic || "/avatar.png"}
                         alt="profile pic"
                         className="object-cover"
                       />
@@ -98,9 +100,9 @@ const ChatContainer = () => {
                   </div>
                 )}
 
-                <div className="flex flex-col max-w-[75%]">
+                <div className="flex flex-col max-w-[85%] md:max-w-[75%]">
                   <div
-                    className={`px-4 py-2 rounded-xl break-words whitespace-pre-wrap ${
+                    className={`px-3 py-2 rounded-xl break-words whitespace-pre-wrap ${
                       message.senderId === authUser._id
                         ? "bg-primary text-primary-content"
                         : "bg-base-100/90 text-base-content shadow-sm border border-base-200/50"
@@ -127,9 +129,11 @@ const ChatContainer = () => {
                           <audio 
                             src={message.voice} 
                             controls 
-                            className={`w-full max-w-[220px] h-8 ${message.senderId === authUser._id ? 
+                            className={`w-full max-w-[220px] h-8 ${
+                              message.senderId === authUser._id ? 
                               'audio-primary' : 
-                              'audio-base'}`}
+                              'audio-base'
+                            }`}
                           />
                           <div className={`text-xs mt-0.5 ${
                             message.senderId === authUser._id ? 
@@ -147,7 +151,9 @@ const ChatContainer = () => {
 
                   <div
                     className={`text-xs mt-1 ${
-                      message.senderId === authUser._id ? "text-right text-primary-content/70" : "text-left text-base-content/50"
+                      message.senderId === authUser._id 
+                        ? "text-right text-primary-content/70" 
+                        : "text-left text-base-content/50"
                     }`}
                   >
                     {message.isSending ? (
@@ -157,7 +163,7 @@ const ChatContainer = () => {
                     )}
                     {message.senderId === authUser._id && (
                       <span className="ml-1">
-                          {message.isRead ? "✓✓" : "✓"}
+                        {message.isRead ? "✓✓" : "✓"}
                       </span>
                     )}
                   </div>
