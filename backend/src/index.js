@@ -26,7 +26,7 @@ app.use(cors({
 }));
 
 app.use("/api/auth", authRoutes);
-app.use("/messages", messageRoutes);
+app.use("/api/messages", messageRoutes);  // ✅ Now matches frontend requests
 app.use("/api", wallpaperRoute);
 
 
