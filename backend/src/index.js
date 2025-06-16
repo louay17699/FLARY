@@ -17,13 +17,22 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.use(cors({
-  origin: "https://flary-frontend.onrender.com", // Your frontend URL
-  credentials: true, // Allows cookies
-  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+  origin: [
+    "https://flary-frontend.onrender.com",
+    "http://localhost:3000",
+    // Add mobile-specific domains if needed
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin"
+  ],
+  exposedHeaders: ["Authorization"] // Important for mobile to access the token
 }));
-
-// Handle preflight requests (required for CORS)
-app.options("*", cors());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);  // ✅ Now matches frontend requests

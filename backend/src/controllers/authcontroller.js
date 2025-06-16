@@ -2,6 +2,7 @@ import { generateToken } from "../lib/jwt.js";
 import User from "../models/usermodel.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
+const { token } = generateToken(newUser._id, res);
 
 export const signup = async (req, res) => {
     const {fullName,email,password} = req.body;
