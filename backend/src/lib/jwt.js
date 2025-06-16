@@ -1,17 +1,15 @@
 import jwt from "jsonwebtoken";
 
-export const generateToken =(userId,res)=>{
+export const generateToken = (userId, res) => {
+  const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-    const token = jwt.sign({userId},process.env.JWT_SECRET,{
-        expiresIn: "7d",
-    })
+  res.cookie("jwt", token, {
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    httpOnly: true,
+    sameSite: "none",  // Required for cross-site cookies
+    secure: true,      // Must be true for SameSite=None
+    // domain: ".onrender.com"  // Try this if issues persist (wildcard domain)
+  });
 
-res.cookie("jwt", token, {
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  httpOnly: true,
-  sameSite: "none",
-  secure: true,
-  
-});
-    return token;
-}
+  return token;
+};
