@@ -2,7 +2,6 @@ import { generateToken } from "../lib/jwt.js";
 import User from "../models/usermodel.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
-const { token } = generateToken(newUser._id, res);
 
 export const signup = async (req, res) => {
     const {fullName,email,password} = req.body;
@@ -36,14 +35,12 @@ export const signup = async (req, res) => {
             generateToken(newUser._id,res);
             await newUser.save(); 
 
-res.status(200).json({
-  token: token, // Always include token in response
-  user: {
-    _id: user._id,
-    fullName: user.fullName,
-    email: user.email
-  }
-});
+            res.status(200).json({
+                _id: newUser._id,
+                fullName: newUser.fullName,
+                email: newUser.email,
+                profilePic: newUser.profilePic,
+            })
         }
         else{
             return res.status(400).json({message: "Invalid User❌"})
@@ -57,27 +54,36 @@ res.status(200).json({
 
 
 export const login = async (req, res) => {
-  try {
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    const { email, password } = req.body;
+    try {
+        const user = await User.findOne({email});
 
-    const isMatch = await bcrypt.compare(req.body.password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+        if (!user){
+            return res.status(400).json({message : "Invalid Credentials❌ "})
+        }
 
-    const { token } = generateToken(user._id, res);
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        if (!isPasswordCorrect){
+            return res.status(400).json({message : "Invalid Credentials❌ "})
+        }
+
+        generateToken(user._id,res);
 
 res.status(200).json({
-  token: token, // Always include token in response
-  user: {
-    _id: user._id,
-    fullName: user.fullName,
-    email: user.email
-  }
-});
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
+  _id: user._id,
+  fullName: user.fullName,
+  email: user.email,
+  profilePic: user.profilePic,
+  lastOnline: user.lastOnline, 
+  createdAt: user.createdAt 
+})
+
+        
+    } catch (error) {
+        console.log("error trying to login ❌", error.message)
+        res.status(500).json({message:"Server error trying to login 🛠️"})
+    }
+}
 
 
 export const logout = (req, res) => {

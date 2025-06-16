@@ -9,13 +9,8 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: [
-      "https://flary-frontend.onrender.com",
-      "http://localhost:3000"
-    ],
-    credentials: true,
-    methods: ["GET", "POST"]
-  }
+    origin: ["https://flary-frontend.onrender.com"],
+  },
 });
 
 export function getReceiverSocketId(userId) {

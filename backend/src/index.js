@@ -11,31 +11,18 @@ import wallpaperRoute from "./routes/wallpaperRoute.js";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 4000 
+const PORT = process.env.PORT;
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.use(cors({
-  origin: [
-    "https://flary-frontend.onrender.com",
-    "http://localhost:3000",
-    // Add mobile-specific domains if needed
-  ],
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Requested-With",
-    "Accept",
-    "Origin"
-  ],
-  exposedHeaders: ["Authorization"] // Important for mobile to access the token
+    origin: "https://flary-frontend.onrender.com",
+    credentials: true,
 }));
 
 app.use("/api/auth", authRoutes);
-app.use("/api/messages", messageRoutes);  // ✅ Now matches frontend requests
+app.use("/api/messages", messageRoutes);
 app.use("/api", wallpaperRoute);
 
 
