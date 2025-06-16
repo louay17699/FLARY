@@ -35,12 +35,14 @@ export const signup = async (req, res) => {
             generateToken(newUser._id,res);
             await newUser.save(); 
 
-            res.status(200).json({
-                _id: newUser._id,
-                fullName: newUser.fullName,
-                email: newUser.email,
-                profilePic: newUser.profilePic,
-            })
+res.status(200).json({
+  token: token, // Always include token in response
+  user: {
+    _id: user._id,
+    fullName: user.fullName,
+    email: user.email
+  }
+});
         }
         else{
             return res.status(400).json({message: "Invalid User❌"})
@@ -63,14 +65,14 @@ export const login = async (req, res) => {
 
     const { token } = generateToken(user._id, res);
 
-    res.status(200).json({
-      token, // Send token in response (for mobile fallback)
-      user: {
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-      },
-    });
+res.status(200).json({
+  token: token, // Always include token in response
+  user: {
+    _id: user._id,
+    fullName: user.fullName,
+    email: user.email
+  }
+});
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
