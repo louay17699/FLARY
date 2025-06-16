@@ -17,8 +17,10 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.use(cors({
-    origin: "https://flary-frontend.onrender.com",
-    credentials: true,
+  origin: ["https://flary-frontend.onrender.com"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"], // Explicitly allow methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Required for mobile
 }));
 
 app.use("/api/auth", authRoutes);
