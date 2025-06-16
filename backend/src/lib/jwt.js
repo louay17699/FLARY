@@ -9,9 +9,9 @@ export const generateToken =(userId,res)=>{
   res.cookie("jwt", token, {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     httpOnly: true,
-    sameSite: "none",  // ← Must be "none" for cross-site
-    secure: true,      // ← Must be true with sameSite: none
-    domain: "flary-frontend.onrender.com" // ← Your exact domain
+    sameSite: "none",  // Required for cross-site
+    secure: true,      // Required with sameSite: none
+    domain: ".onrender.com" // Allows subdomains
   });
     return token;
 }
