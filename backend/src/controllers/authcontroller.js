@@ -54,36 +54,27 @@ export const signup = async (req, res) => {
 
 
 export const login = async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const user = await User.findOne({email});
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
-        if (!user){
-            return res.status(400).json({message : "Invalid Credentials❌ "})
-        }
+    const isMatch = await bcrypt.compare(req.body.password, user.password);
+    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-        const isPasswordCorrect = await bcrypt.compare(password, user.password);
-        if (!isPasswordCorrect){
-            return res.status(400).json({message : "Invalid Credentials❌ "})
-        }
+    const { token } = generateToken(user._id, res);
 
-        generateToken(user._id,res);
-
-res.status(200).json({
-  _id: user._id,
-  fullName: user.fullName,
-  email: user.email,
-  profilePic: user.profilePic,
-  lastOnline: user.lastOnline, 
-  createdAt: user.createdAt 
-})
-
-        
-    } catch (error) {
-        console.log("error trying to login ❌", error.message)
-        res.status(500).json({message:"Server error trying to login 🛠️"})
-    }
-}
+    res.status(200).json({
+      token, // Send token in response (for mobile fallback)
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 
 export const logout = (req, res) => {
