@@ -87,13 +87,18 @@ res.status(200).json({
 
 
 export const logout = (req, res) => {
-    try {
-        res.cookie("jwt","",{maxAge:0})
-        res.status(200).json({message:"Logged out successfully"})
-    } catch (error) {
-        console.log("error trying to logout ❌", error.message)
-        res.status(500).json({message:"Server error trying to logout  🛠️"})
-    }
+  try {
+    res.cookie("jwt", "", {
+      maxAge: 0,
+      httpOnly: true,
+      secure: true,
+      sameSite: "none" // Match the same settings as the login cookie
+    });
+    res.status(200).json({message: "Logged out successfully"});
+  } catch (error) {
+    console.log("error trying to logout ❌", error.message);
+    res.status(500).json({message: "Server error trying to logout 🛠️"});
+  }
 }
 
 export const updateProfile = async (req, res) => {
