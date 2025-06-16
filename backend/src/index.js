@@ -16,18 +16,21 @@ const PORT = process.env.PORT || 4000
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
-app.use(cors({
+// Replace your current CORS setup with this:
+const corsOptions = {
   origin: [
-    "https://flary-frontend.onrender.com",
-    "https://flary.onrender.com"
+    "https://flary-frontend.onrender.com", 
+    "http://localhost:3000" // For local development
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
-}));
+};
+
+app.use(cors(corsOptions));
 
 // Handle preflight requests
-app.options("*", cors());
+app.options("*", cors(corsOptions)); // Important for all routes
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);  // ✅ Now matches frontend requests

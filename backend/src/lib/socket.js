@@ -11,7 +11,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       "https://flary-frontend.onrender.com",
-      "http://localhost:3000" // For local testing
+      "http://localhost:3000"
     ],
     credentials: true,
     methods: ["GET", "POST"]
