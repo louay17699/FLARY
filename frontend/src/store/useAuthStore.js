@@ -29,19 +29,43 @@ export const useAuthStore = create((set, get) => ({
   },
 
 
+// Update the checkAuth function
 checkAuth: async () => {
+  set({ isCheckingAuth: true });
   try {
     const res = await axiosInstance.get("/auth/check");
     if (res.data) {
       set({ authUser: res.data });
       get().connectSocket();
+      // Ensure token is in localStorage for mobile
+      const token = localStorage.getItem("authToken");
+      if (!token && res.data.token) {
+        localStorage.setItem("authToken", res.data.token);
+      }
     } else {
       set({ authUser: null });
+      localStorage.removeItem("authToken");
     }
   } catch (error) {
-    console.log("Auth check failed, retrying...", error);
-    // Retry once after 1 second (helps with mobile latency)
-    setTimeout(() => get().checkAuth(), 1000);
+    console.log("Auth check failed", error);
+    // For mobile, try with token from localStorage
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      try {
+        const verifyRes = await axiosInstance.get("/auth/check", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (verifyRes.data) {
+          set({ authUser: verifyRes.data });
+          get().connectSocket();
+          return;
+        }
+      } catch (e) {
+        console.log("Token verification failed", e);
+      }
+    }
+    set({ authUser: null });
+    localStorage.removeItem("authToken");
   } finally {
     set({ isCheckingAuth: false });
   }
@@ -160,23 +184,37 @@ checkAuth: async () => {
     }
   },
 
-  connectSocket: () => {
-    const { authUser } = get();
-    if (!authUser || get().socket?.connected) return;
+connectSocket: () => {
+  const { authUser } = get();
+  if (!authUser || get().socket?.connected) return;
 
-    const socket = io(BASE_URL, {
-      query: {
-        userId: authUser._id,
-      },
-    });
+  const socket = io(BASE_URL, {
+    query: {
+      userId: authUser._id,
+    },
+    transports: ["websocket", "polling"], // Important for mobile
+    upgrade: true,
+    forceNew: true,
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    timeout: 20000,
+  });
 
-    socket.connect();
+  socket.on("connect_error", (err) => {
+    console.log("Socket connection error:", err);
+    // Try reconnecting after delay
+    setTimeout(() => get().connectSocket(), 2000);
+  });
 
-    set({ socket });
+  socket.connect();
 
-    socket.on("getOnlineUsers", (userIds) => {
-      set({ onlineUsers: userIds });
-    });
+  set({ socket });
+
+  socket.on("getOnlineUsers", (userIds) => {
+    set({ onlineUsers: userIds });
+  });
 
 socket.on("userStatusUpdate", (updatedUser) => {
   set((state) => {
