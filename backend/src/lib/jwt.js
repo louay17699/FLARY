@@ -7,11 +7,11 @@ export const generateToken =(userId,res)=>{
     })
 
   res.cookie("jwt", token, {
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     httpOnly: true,
-    sameSite: "none",  // Allow cross-site cookies (for mobile)
-    secure: true,      // Required for HTTPS
-    domain: ".onrender.com"  // Allow cookies for all Render subdomains
+    sameSite: "none",  // ← Must be "none" for cross-site
+    secure: true,      // ← Must be true with sameSite: none
+    domain: "flary-frontend.onrender.com" // ← Your exact domain
   });
     return token;
 }
