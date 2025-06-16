@@ -9,8 +9,12 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://flary-frontend.onrender.com",
-    credentials: true
+    origin: [
+      "https://flary-frontend.onrender.com",
+      "http://localhost:3000" // For local testing
+    ],
+    credentials: true,
+    methods: ["GET", "POST"]
   }
 });
 

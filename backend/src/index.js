@@ -18,12 +18,16 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.use(cors({
   origin: [
-    "https://flary-frontend.onrender.com",
-    "https://flary.onrender.com"  // Allow backend domain too
+    "https://flary-frontend.onrender.com", // Frontend URL
+    "http://localhost:3000"                // For local testing (if needed)
   ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"]
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Add OPTIONS for preflight
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
+// Handle preflight requests
+app.options("*", cors()); // Enable preflight for all routes
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);  // ✅ Now matches frontend requests
