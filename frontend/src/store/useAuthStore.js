@@ -35,13 +35,13 @@ checkAuth: async () => {
     if (res.data) {
       set({ authUser: res.data });
       get().connectSocket();
-      await get().initializeWallpaper();
     } else {
       set({ authUser: null });
     }
   } catch (error) {
-    console.log("Auth check failed:", error);
-    set({ authUser: null });
+    console.log("Auth check failed, retrying...", error);
+    // Retry once after 1 second (helps with mobile latency)
+    setTimeout(() => get().checkAuth(), 1000);
   } finally {
     set({ isCheckingAuth: false });
   }
