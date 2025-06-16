@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { useWallpaperStore } from "./useWallpaperStore";
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "https://flary.onrender.com";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
